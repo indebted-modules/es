@@ -1,0 +1,4 @@
+name: modules-es
+steps:
+  - label: ":pipeline:"
+    command: buildkite-agent pipeline upload
