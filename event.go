@@ -32,7 +32,7 @@ func NewEvent(aggregateID string, payload EventPayload) *Event {
 		AggregateID:   aggregateID,
 		AggregateType: payload.AggregateType(),
 		Payload:       payload,
-		Created:       time.Now().Truncate(time.Microsecond),
+		Created:       time.Now(),
 	}
 	return event
 }
