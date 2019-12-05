@@ -15,7 +15,7 @@ steps:
 
   - name: test
     command:
-      - dockerize -wait http://dynamodb:8000 -timeout 60s
+      - dockerize -wait http://dynamodb:8000/shell/ -timeout 60s
       - make test
     plugins:
       - docker-compose#v3.1.0:
