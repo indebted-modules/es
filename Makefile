@@ -1,6 +1,10 @@
 # Highlight
 HL = @printf "\033[36m>> $1\033[0m\n"
 
+ifndef DYNAMO_URL
+	DYNAMO_URL="http://localhost:8000"
+endif
+
 default: help
 
 help:

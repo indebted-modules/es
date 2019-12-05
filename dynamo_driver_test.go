@@ -2,6 +2,7 @@ package es_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -46,7 +47,7 @@ func (s *DynamoDriverSuite) SetupSuite() {
 		&aws.Config{
 			Region:      aws.String("local"),
 			Credentials: credentials.NewStaticCredentials("id", "secret", "token"),
-			Endpoint:    aws.String("http://localhost:8000"),
+			Endpoint:    aws.String(os.Getenv("DYNAMO_URL")),
 		},
 	)
 
