@@ -12,3 +12,12 @@ steps:
       - docker-compose#v3.1.0:
           run: golint
           config: .buildkite/docker-compose.yml
+
+  - name: test
+    command:
+      - dockerize -wait http://dynamodb:8000 -timeout 60s
+      - make test
+    plugins:
+      - docker-compose#v3.1.0:
+          run: test
+          config: .buildkite/docker-compose.yml
