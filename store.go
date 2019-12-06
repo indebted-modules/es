@@ -14,6 +14,10 @@ func NewStore(driver Driver) *Store {
 
 // Load loads aggregate by ID
 func (s *Store) Load(aggregateID string, aggregate Aggregate) error {
+	if aggregateID == "" {
+		return nil
+	}
+
 	events, err := s.driver.Load(aggregateID)
 	if err != nil {
 		return err
