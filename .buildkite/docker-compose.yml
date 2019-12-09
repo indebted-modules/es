@@ -1,19 +1,5 @@
 version: "3.1"
 services:
-  golang:
-    image: golang:1.13.4
-    volumes:
-      - ../:/src
-    working_dir: /src
-
-  golint:
-    build:
-      context: .
-      dockerfile: ./images/golint.Dockerfile
-    volumes:
-      - ../:/src
-    working_dir: /src
-
   test:
     build:
       context: .
