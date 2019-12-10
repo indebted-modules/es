@@ -1,10 +1,10 @@
 repos:
-- repo: git://github.com/pre-commit/pre-commit-hooks
-  rev: v2.1.0
-  hooks:
-    - id: check-merge-conflict
-- repo: git://github.com/dnephin/pre-commit-golang
-  rev: v0.3.4
-  hooks:
-    - id: go-fmt
-    - id: go-lint
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v2.2.3
+    hooks:
+      - id: check-merge-conflict
+  - repo: git://github.com/dnephin/pre-commit-golang
+    rev: v0.3.4
+    hooks:
+      - id: go-fmt
+      - id: go-lint
