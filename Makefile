@@ -12,6 +12,10 @@ help:
 	@grep -E "^[\. a-zA-Z_-]+:.*?## .*$$" $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' |sort
 
+go-mod-verify: ## Verify that the dependencies of the current module have not been modified
+	$(call HL,go-mod-verify)
+	@go mod verify
+
 check-fmt: ## Check code formatting
 	$(call HL,check-fmt)
 	F=$(F) script/check-fmt.sh `find . -name "*.go"`
