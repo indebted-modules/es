@@ -1,6 +1,7 @@
 steps:
   - name: test
     command:
+      - make go-mod-verify
       - make check-fmt
       - make lint
       - dockerize -wait http://dynamodb:8000/shell/ -timeout 60s
