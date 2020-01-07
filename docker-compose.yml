@@ -1,0 +1,9 @@
+version: "3"
+services:
+  dev:
+    build: .
+    volumes:
+      - .:/src
+      - ./.tmp/go/pkg:/go/pkg
+      - ./.tmp/go/cache:/.cache
+      - ./.tmp/mmake:/usr/local/include/github.com
