@@ -1,12 +1,8 @@
 steps:
-  - name: test
+  - name: lint && test
     command:
-      - make go-mod-verify
-      - make check-fmt
-      - make lint
-      - dockerize -wait http://dynamodb:8000/shell/ -timeout 60s
-      - DYNAMO_URL=http://dynamodb:8000 make test
+      - mmake lint
+      - mmake test
     plugins:
-      - docker#v3.3.0:
-          image: indebted-test
-          network: indebted-net
+      - docker-compose#v3.1.0:
+          run: dev
