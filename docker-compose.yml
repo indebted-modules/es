@@ -7,3 +7,11 @@ services:
       - ./.tmp/go/pkg:/go/pkg
       - ./.tmp/go/cache:/.cache
       - ./.tmp/mmake:/usr/local/include/github.com
+    environment:
+      - DYNAMO_URL=http://dynamodb:8000
+    depends_on:
+      - dynamodb
+
+  dynamodb:
+    image: amazon/dynamodb-local:1.11.477
+    container_name: dynamodb

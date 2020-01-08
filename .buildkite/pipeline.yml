@@ -2,6 +2,7 @@ steps:
   - name: lint && test
     command:
       - mmake lint
+      - mmake dynamo.is-up
       - mmake test
     plugins:
       - docker-compose#v3.1.0:
