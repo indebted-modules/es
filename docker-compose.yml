@@ -14,3 +14,13 @@ services:
 
   dynamodb:
     image: amazon/dynamodb-local:1.11.477
+
+  mysql:
+    image: mysql:8.0.18
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: event-store-test
+    ports:
+      - 3306:3306
