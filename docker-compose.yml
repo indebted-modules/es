@@ -11,6 +11,15 @@ services:
       - DYNAMO_URL=http://dynamodb:8000
     depends_on:
       - dynamodb
+      - postgres
 
   dynamodb:
     image: amazon/dynamodb-local:1.11.477
+
+  postgres:
+    image: postgres:9.6-alpine
+    command: postgres -c log_statement=all
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: indebted
