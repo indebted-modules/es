@@ -46,26 +46,14 @@ func (s *PostgresDriverSuite) SetupTest() {
 	s.NoError(err)
 
 	s.tableName = "event_store"
-	_, err = s.db.Exec(fmt.Sprintf(`
-		CREATE TABLE "%s" (
-		    -- TODO: Author VARCHAR(255) NOT NULL,
-			ID               BIGSERIAL PRIMARY KEY,
-			Created          TIMESTAMPTZ DEFAULT now() NOT NULL,
-			AggregateID      VARCHAR(255) NOT NULL,
-			AggregateVersion INT NOT NULL,
-			AggregateType    VARCHAR(255) NOT NULL,
-			Type             VARCHAR(255) NOT NULL,
-			Payload          JSON NOT NULL,
-
-			CONSTRAINT OptimisticLocking UNIQUE (AggregateID, AggregateVersion)
-		)
-	`, s.tableName)) // TODO: move Create Table statement into the driver itself
-	s.NoError(err)
-
-	s.driver = &es.PostgresDriver{
+	postgresDriver := &es.PostgresDriver{
 		DB: s.db,
 		Table: s.tableName,
 	}
+	err = postgresDriver.CreateTable()
+	s.NoError(err)
+
+	s.driver = postgresDriver
 }
 
 func (s *PostgresDriverSuite) TearDownTest() {
