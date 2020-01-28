@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/lib/pq"
-	// postgres driver
-	_ "github.com/lib/pq"
 )
 
 const createTable = `
@@ -26,6 +24,9 @@ const createTable = `
 	)
 `
 
+// CreateTable creates the event-store table with the necessary columns and
+// constraints. It's name is dictated by the `Table` property set when
+// initializing the `PostgresDriver` struct.
 func (d *PostgresDriver) CreateTable() error {
 	_, err := d.DB.Exec(fmt.Sprintf(createTable, d.tableName()))
 	if err != nil {
@@ -35,6 +36,8 @@ func (d *PostgresDriver) CreateTable() error {
 	return nil
 }
 
+// MustConnectPostgres ensures a healthy connection is established with the
+// given URL. Panics otherwise.
 func MustConnectPostgres(url string) *sql.DB {
 	db, err := sql.Open("postgres", url)
 	if err != nil {
@@ -50,11 +53,13 @@ func MustConnectPostgres(url string) *sql.DB {
 	return db
 }
 
+// PostgresDriver implements a Postgres-backed event-store.
 type PostgresDriver struct {
 	DB    *sql.DB
 	Table string
 }
 
+// Load loads all events for the given aggregateID ordered by version
 func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 	rows, err := d.DB.Query(fmt.Sprintf(`
 		SELECT
@@ -108,6 +113,9 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 	return events, nil
 }
 
+// Save saves all given events in the underlying event-store table. It does so
+// in a transactional manner, meaning that if any of the events violates any
+// constraints, none of the events will be persisted.
 func (d *PostgresDriver) Save(events []*Event) error {
 	tx, err := d.DB.Begin() // TODO: double check the most appropriate isolation level for an append-only table (Read Committed?)
 	if err != nil {
