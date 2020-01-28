@@ -24,6 +24,12 @@ const createTable = `
 	)
 `
 
+// PostgresDriver implements a Postgres-backed event-store.
+type PostgresDriver struct {
+	DB    *sql.DB
+	Table string
+}
+
 // CreateTable creates the event-store table with the necessary columns and
 // constraints. It's name is dictated by the `Table` property set when
 // initializing the `PostgresDriver` struct.
@@ -34,29 +40,6 @@ func (d *PostgresDriver) CreateTable() error {
 	}
 
 	return nil
-}
-
-// MustConnectPostgres ensures a healthy connection is established with the
-// given URL. Panics otherwise.
-func MustConnectPostgres(url string) *sql.DB {
-	db, err := sql.Open("postgres", url)
-	if err != nil {
-		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
-	}
-	err = db.Ping()
-	if err != nil {
-		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
-	}
-	db.SetConnMaxLifetime(time.Hour)
-	db.SetMaxIdleConns(1)
-	db.SetMaxOpenConns(1)
-	return db
-}
-
-// PostgresDriver implements a Postgres-backed event-store.
-type PostgresDriver struct {
-	DB    *sql.DB
-	Table string
 }
 
 // Load loads all events for the given aggregateID ordered by version
@@ -166,4 +149,21 @@ func (d *PostgresDriver) Save(events []*Event) error {
 
 func (d *PostgresDriver) tableName() string {
 	return pq.QuoteIdentifier(d.Table)
+}
+
+// MustConnectPostgres ensures a healthy connection is established with the
+// given URL. Panics otherwise.
+func MustConnectPostgres(url string) *sql.DB {
+	db, err := sql.Open("postgres", url)
+	if err != nil {
+		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
+	}
+	err = db.Ping()
+	if err != nil {
+		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
+	}
+	db.SetConnMaxLifetime(time.Hour)
+	db.SetMaxIdleConns(1)
+	db.SetMaxOpenConns(1)
+	return db
 }
