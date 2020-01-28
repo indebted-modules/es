@@ -11,6 +11,30 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const createTable = `
+	CREATE TABLE %s (
+		-- TODO: Author VARCHAR(255) NOT NULL,
+		ID               BIGSERIAL PRIMARY KEY,
+		Created          TIMESTAMPTZ DEFAULT now() NOT NULL,
+		AggregateID      VARCHAR(255) NOT NULL,
+		AggregateVersion INT NOT NULL,
+		AggregateType    VARCHAR(255) NOT NULL,
+		Type             VARCHAR(255) NOT NULL,
+		Payload          JSON NOT NULL,
+
+		CONSTRAINT OptimisticLocking UNIQUE (AggregateID, AggregateVersion)
+	)
+`
+
+func (d *PostgresDriver) CreateTable() error {
+	_, err := d.DB.Exec(fmt.Sprintf(createTable, d.tableName()))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func MustConnectPostgres(url string) *sql.DB {
 	db, err := sql.Open("postgres", url)
 	if err != nil {
