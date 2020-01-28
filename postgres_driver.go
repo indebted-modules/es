@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/lib/pq"
 	// postgres driver
 	_ "github.com/lib/pq"
 )
@@ -43,7 +44,7 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 		FROM %s
 		WHERE AggregateID = $1
 		ORDER BY AggregateVersion
-	`, d.Table), aggregateID)
+	`, d.tableName()), aggregateID)
 	if err != nil {
 		return []*Event{}, err
 	}
@@ -97,7 +98,7 @@ func (d *PostgresDriver) Save(events []*Event) error {
 			Type,
 			Payload
 		) VALUES($1, $2, $3, $4, $5)
-	`, d.Table))
+	`, d.tableName()))
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -129,4 +130,8 @@ func (d *PostgresDriver) Save(events []*Event) error {
 	}
 
 	return nil
+}
+
+func (d *PostgresDriver) tableName() string {
+	return pq.QuoteIdentifier(d.Table)
 }
