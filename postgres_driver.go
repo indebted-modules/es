@@ -32,7 +32,19 @@ type PostgresDriver struct {
 }
 
 func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
-	rows, err := d.DB.Query(fmt.Sprintf(`SELECT ID, Created, AggregateID, AggregateVersion, AggregateType, Type, Payload FROM %s WHERE AggregateID = $1 ORDER BY AggregateVersion`, d.Table), aggregateID)
+	rows, err := d.DB.Query(fmt.Sprintf(`
+		SELECT
+			ID,
+			Created,
+			AggregateID,
+			AggregateVersion,
+			AggregateType,
+			Type,
+			Payload
+		FROM %s
+		WHERE AggregateID = $1
+		ORDER BY AggregateVersion
+	`, d.Table), aggregateID)
 	if err != nil {
 		return []*Event{}, err
 	}
@@ -78,7 +90,16 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare(fmt.Sprintf(`INSERT INTO %s (AggregateID, AggregateVersion, AggregateType, Type, Payload, Created) VALUES($1, $2, $3, $4, $5, $6)`, d.Table))
+	stmt, err := tx.Prepare(fmt.Sprintf(`
+		INSERT INTO %s (
+			AggregateID,
+			AggregateVersion,
+			AggregateType,
+			Type,
+			Payload,
+			Created
+		) VALUES($1, $2, $3, $4, $5, $6)
+	`, d.Table))
 	if err != nil {
 		tx.Rollback()
 		return err
