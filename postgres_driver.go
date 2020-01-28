@@ -11,7 +11,6 @@ import (
 )
 
 func MustConnectPostgres(url string) *sql.DB {
-	// TODO: as this is a lib, log fatal or panic?
 	db, err := sql.Open("postgres", url)
 	if err != nil {
 		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
