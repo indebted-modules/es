@@ -12,15 +12,16 @@ import (
 
 type PostgresDriverSuite struct {
 	suite.Suite
-	db *sql.DB
+	db        *sql.DB
 	tableName string
-	driver es.Driver
+	driver    es.Driver
 }
 
-type TestPayload struct { Data string }
-func (TestPayload) PayloadType() string { return "TestPayload" }
+type TestPayload struct{ Data string }
+
+func (TestPayload) PayloadType() string   { return "TestPayload" }
 func (TestPayload) AggregateType() string { return "AggregateType" }
-func init() { es.Register(TestPayload{}) }
+func init()                               { es.Register(TestPayload{}) }
 
 type Row struct {
 	ID               uint64
@@ -47,7 +48,7 @@ func (s *PostgresDriverSuite) SetupTest() {
 
 	s.tableName = "event_store"
 	postgresDriver := &es.PostgresDriver{
-		DB: s.db,
+		DB:    s.db,
 		Table: s.tableName,
 	}
 	err = postgresDriver.CreateTable()
@@ -66,7 +67,7 @@ func (s *PostgresDriverSuite) TearDownTest() {
 }
 
 func (s *PostgresDriverSuite) TestMustConnectPostgresPanics() {
-	s.Panics(func() {es.MustConnectPostgres("postgres://invalid") })
+	s.Panics(func() { es.MustConnectPostgres("postgres://invalid") })
 }
 
 func (s *PostgresDriverSuite) TestLoad() {
@@ -280,7 +281,7 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	s.Equal(0, count)
 }
 
-func (s *PostgresDriverSuite)  TestSaveEmptyEvents() {
+func (s *PostgresDriverSuite) TestSaveEmptyEvents() {
 	err := s.driver.Save([]*es.Event{})
 	s.Nil(err)
 }
