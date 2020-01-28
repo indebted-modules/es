@@ -39,12 +39,19 @@ func TestPostgresDriverSuite(t *testing.T) {
 
 func (s *PostgresDriverSuite) SetupTest() {
 	s.db = es.MustConnectPostgres("postgres://user:password@postgres/indebted?sslmode=disable")
+
+	_, err := s.db.Exec(`
+		CREATE SCHEMA stub; CREATE FUNCTION stub.now() RETURNS TIMESTAMPTZ LANGUAGE SQL AS $$ SELECT '2019-06-30 00:00+00'::timestamptz; $$;
+		SET search_path = stub,"$user",public,pg_catalog;
+	`)
+	s.NoError(err)
+
 	s.tableName = pq.QuoteIdentifier("event_store") // TODO: move QuoteIdentifier into the driver itself?
-	_, err := s.db.Exec(fmt.Sprintf(`
+	_, err = s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE %s (
 		    -- TODO: Author VARCHAR(255) NOT NULL,
 			ID               BIGSERIAL PRIMARY KEY,
-			Created          TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+			Created          TIMESTAMPTZ DEFAULT now() NOT NULL,
 			AggregateID      VARCHAR(255) NOT NULL,
 			AggregateVersion INT NOT NULL,
 			AggregateType    VARCHAR(255) NOT NULL,
@@ -64,6 +71,8 @@ func (s *PostgresDriverSuite) SetupTest() {
 
 func (s *PostgresDriverSuite) TearDownTest() {
 	_, err := s.db.Exec(fmt.Sprintf(`DROP TABLE IF EXISTS %s`, s.tableName))
+	s.NoError(err)
+	_, err = s.db.Exec(`DROP SCHEMA IF EXISTS stub CASCADE`)
 	s.NoError(err)
 	err = s.db.Close()
 	s.NoError(err)
@@ -158,7 +167,6 @@ func (s *PostgresDriverSuite) TestLoad() {
 func (s *PostgresDriverSuite) TestSave() {
 	events := []*es.Event{
 		{
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -166,7 +174,6 @@ func (s *PostgresDriverSuite) TestSave() {
 			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
 		},
 		{
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
@@ -174,7 +181,6 @@ func (s *PostgresDriverSuite) TestSave() {
 			Payload:          &TestPayload{Data: "AggregateID#1 - V1"},
 		},
 		{
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#2",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",

@@ -96,9 +96,8 @@ func (d *PostgresDriver) Save(events []*Event) error {
 			AggregateVersion,
 			AggregateType,
 			Type,
-			Payload,
-			Created
-		) VALUES($1, $2, $3, $4, $5, $6)
+			Payload
+		) VALUES($1, $2, $3, $4, $5)
 	`, d.Table))
 	if err != nil {
 		tx.Rollback()
@@ -118,7 +117,6 @@ func (d *PostgresDriver) Save(events []*Event) error {
 			event.AggregateType,
 			event.Type,
 			payload,
-			event.Created, // TODO: this needs to be a pointer as the Zero value is a valid date, and we want the DB to create it
 		)
 		if err != nil {
 			tx.Rollback()
