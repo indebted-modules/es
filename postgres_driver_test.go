@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/indebted-modules/es"
-	"github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -46,9 +45,9 @@ func (s *PostgresDriverSuite) SetupTest() {
 	`)
 	s.NoError(err)
 
-	s.tableName = pq.QuoteIdentifier("event_store") // TODO: move QuoteIdentifier into the driver itself?
+	s.tableName = "event_store"
 	_, err = s.db.Exec(fmt.Sprintf(`
-		CREATE TABLE %s (
+		CREATE TABLE "%s" (
 		    -- TODO: Author VARCHAR(255) NOT NULL,
 			ID               BIGSERIAL PRIMARY KEY,
 			Created          TIMESTAMPTZ DEFAULT now() NOT NULL,
@@ -70,7 +69,7 @@ func (s *PostgresDriverSuite) SetupTest() {
 }
 
 func (s *PostgresDriverSuite) TearDownTest() {
-	_, err := s.db.Exec(fmt.Sprintf(`DROP TABLE IF EXISTS %s`, s.tableName))
+	_, err := s.db.Exec(fmt.Sprintf(`DROP TABLE IF EXISTS "%s"`, s.tableName))
 	s.NoError(err)
 	_, err = s.db.Exec(`DROP SCHEMA IF EXISTS stub CASCADE`)
 	s.NoError(err)
@@ -84,7 +83,7 @@ func (s *PostgresDriverSuite) TestMustConnectPostgresPanics() {
 
 func (s *PostgresDriverSuite) TestLoad() {
 	stmt, err := s.db.Prepare(fmt.Sprintf(`
-		INSERT INTO %s (
+		INSERT INTO "%s" (
 			ID,
 			Created,
 			AggregateID,
@@ -196,7 +195,7 @@ func (s *PostgresDriverSuite) TestSave() {
 	err := s.driver.Save(events)
 	s.NoError(err)
 
-	rows, err := s.db.Query(fmt.Sprintf("SELECT ID, Created, AggregateID, AggregateVersion, AggregateType, Type, Payload FROM %s", s.tableName))
+	rows, err := s.db.Query(fmt.Sprintf(`SELECT ID, Created, AggregateID, AggregateVersion, AggregateType, Type, Payload FROM "%s"`, s.tableName))
 	s.NoError(err)
 	result, err := readResult(rows)
 	s.NoError(err)
@@ -287,7 +286,7 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	s.Error(err)
 
 	var count int
-	result := s.db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM %s", s.tableName))
+	result := s.db.QueryRow(fmt.Sprintf(`SELECT COUNT(*) FROM "%s"`, s.tableName))
 	err = result.Scan(&count)
 	s.NoError(err)
 	s.Equal(0, count)
