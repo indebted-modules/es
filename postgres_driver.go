@@ -78,7 +78,7 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare(fmt.Sprintf(`INSERT INTO %s (ID, Type, AggregateID, AggregateType, AggregateVersion, Payload, Created) VALUES($1, $2, $3, $4, $5, $6, $7)`, d.Table))
+	stmt, err := tx.Prepare(fmt.Sprintf(`INSERT INTO %s (Type, AggregateID, AggregateType, AggregateVersion, Payload, Created) VALUES($1, $2, $3, $4, $5, $6)`, d.Table))
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -92,7 +92,6 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		}
 
 		_, err = stmt.Exec(
-			event.ID, // TODO: This needs to be a pointer as the Zero value would be `0`, which is a valid ID
 			event.Type,
 			event.AggregateID,
 			event.AggregateType,

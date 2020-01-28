@@ -72,18 +72,20 @@ func (s *PostgresDriverSuite) TearDownTest() {
 func (s *PostgresDriverSuite) TestLoad() {
 	stmt, err := s.db.Prepare(fmt.Sprintf(`
 		INSERT INTO %s (
+			ID,
 			Created,
 			AggregateID,
 			AggregateVersion,
 			AggregateType,
 			Type,
 			Payload
-		) VALUES($1, $2, $3, $4, $5, $6)
+		) VALUES($1, $2, $3, $4, $5, $6, $7)
 	`, s.tableName))
 	s.NoError(err)
 	defer stmt.Close()
 
 	_, err = stmt.Exec(
+		1,
 		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		"AggregateID#1",
 		0,
@@ -94,6 +96,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 	s.NoError(err)
 
 	_, err = stmt.Exec(
+		2,
 		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		"AggregateID#2",
 		0,
@@ -104,6 +107,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 	s.NoError(err)
 
 	_, err = stmt.Exec(
+		3,
 		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		"AggregateID#1",
 		1,
@@ -154,7 +158,6 @@ func (s *PostgresDriverSuite) TestLoad() {
 func (s *PostgresDriverSuite) TestSave() {
 	events := []*es.Event{
 		{
-			ID:               "1001",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 0,
@@ -163,7 +166,6 @@ func (s *PostgresDriverSuite) TestSave() {
 			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
 		},
 		{
-			ID:               "1002",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 1,
@@ -172,7 +174,6 @@ func (s *PostgresDriverSuite) TestSave() {
 			Payload:          &TestPayload{Data: "AggregateID#1 - V1"},
 		},
 		{
-			ID:               "1003",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#2",
 			AggregateVersion: 0,
@@ -192,7 +193,7 @@ func (s *PostgresDriverSuite) TestSave() {
 
 	s.Equal([]*Row{
 		{
-			ID:               1001,
+			ID:               1,
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 0,
@@ -201,7 +202,7 @@ func (s *PostgresDriverSuite) TestSave() {
 			Payload:          []byte(`{"Data":"AggregateID#1 - V0"}`),
 		},
 		{
-			ID:               1002,
+			ID:               2,
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 1,
@@ -210,7 +211,7 @@ func (s *PostgresDriverSuite) TestSave() {
 			Payload:          []byte(`{"Data":"AggregateID#1 - V1"}`),
 		},
 		{
-			ID:               1003,
+			ID:               3,
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#2",
 			AggregateVersion: 0,
@@ -224,7 +225,6 @@ func (s *PostgresDriverSuite) TestSave() {
 func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 	events := []*es.Event{
 		{
-			ID:               "1001",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 0,
@@ -239,7 +239,6 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 
 	events = []*es.Event{
 		{
-			ID:               "1002",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1",
 			AggregateVersion: 0,
@@ -257,7 +256,6 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	events := []*es.Event{
 		{
-			ID:               "1001",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
@@ -266,7 +264,6 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 			Payload:          &TestPayload{Data: "AggregateID#1 - TX"},
 		},
 		{
-			ID:               "1002",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
