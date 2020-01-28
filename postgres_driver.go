@@ -16,7 +16,7 @@ const createTable = `
 		-- TODO: Author VARCHAR(255) NOT NULL,
 		ID               BIGSERIAL PRIMARY KEY,
 		Created          TIMESTAMPTZ DEFAULT now() NOT NULL,
-		AggregateID      VARCHAR(255) NOT NULL,
+		AggregateID      UUID NOT NULL,
 		AggregateVersion INT NOT NULL,
 		AggregateType    VARCHAR(255) NOT NULL,
 		Type             VARCHAR(255) NOT NULL,
