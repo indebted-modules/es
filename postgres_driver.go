@@ -183,6 +183,8 @@ func MustConnect(url string) *sql.DB {
 	return db
 }
 
+// ShouldClose ensures the given `io.Closer` is successfully closed.
+// Warns otherwise.
 func ShouldClose(closer io.Closer) {
 	err := closer.Close()
 	if err != nil {
