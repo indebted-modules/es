@@ -3,11 +3,11 @@ package es
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	// Postgres driver
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog/log"
 )
 
 const createTable = `
@@ -115,7 +115,13 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		) VALUES($1, $2, $3, $4, $5)
 	`)
 	if err != nil {
-		tx.Rollback()
+		rErr := tx.Rollback()
+		if rErr != nil {
+			log.
+				Fatal().
+				Err(rErr).
+				Msg("Failed rolling back transaction")
+		}
 		return err
 	}
 	defer stmt.Close()
@@ -134,7 +140,13 @@ func (d *PostgresDriver) Save(events []*Event) error {
 			payload,
 		)
 		if err != nil {
-			tx.Rollback()
+			rErr := tx.Rollback()
+			if rErr != nil {
+				log.
+					Fatal().
+					Err(rErr).
+					Msg("Failed rolling back transaction")
+			}
 			return err
 		}
 	}
@@ -152,11 +164,17 @@ func (d *PostgresDriver) Save(events []*Event) error {
 func MustConnectPostgres(url string) *sql.DB {
 	db, err := sql.Open("postgres", url)
 	if err != nil {
-		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
+		log.
+			Fatal().
+			Err(err).
+			Msg("Failed opening connection to the database")
 	}
 	err = db.Ping()
 	if err != nil {
-		panic(fmt.Sprintf("Failed connecting to the database: %v", err))
+		log.
+			Fatal().
+			Err(err).
+			Msg("Failed sending ping to the database")
 	}
 	db.SetConnMaxLifetime(time.Hour)
 	db.SetMaxIdleConns(1)

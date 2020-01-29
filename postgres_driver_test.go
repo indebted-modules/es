@@ -63,10 +63,6 @@ func (s *PostgresDriverSuite) TearDownTest() {
 	s.NoError(err)
 }
 
-func (s *PostgresDriverSuite) TestMustConnectPostgresPanics() {
-	s.Panics(func() { es.MustConnectPostgres("postgres://invalid") })
-}
-
 func (s *PostgresDriverSuite) TestLoad() {
 	stmt, err := s.db.Prepare(`
 		INSERT INTO events (
