@@ -159,9 +159,9 @@ func (d *PostgresDriver) Save(events []*Event) error {
 	return nil
 }
 
-// MustConnectPostgres ensures a healthy connection is established with the
+// MustConnect ensures a healthy connection is established with the
 // given URL. Panics otherwise.
-func MustConnectPostgres(url string) *sql.DB {
+func MustConnect(url string) *sql.DB {
 	db, err := sql.Open("postgres", url)
 	if err != nil {
 		log.
