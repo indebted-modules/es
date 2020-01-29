@@ -25,11 +25,11 @@ func init()                               { es.Register(TestPayload{}) }
 
 type Row struct {
 	ID               uint64
+	Type             string
 	Created          time.Time
 	AggregateID      string
 	AggregateVersion int64
 	AggregateType    string
-	Type             string
 	Payload          []byte
 }
 
@@ -74,11 +74,11 @@ func (s *PostgresDriverSuite) TestLoad() {
 	stmt, err := s.db.Prepare(fmt.Sprintf(`
 		INSERT INTO "%s" (
 			ID,
+			Type,
 			Created,
 			AggregateID,
 			AggregateVersion,
 			AggregateType,
-			Type,
 			Payload
 		) VALUES($1, $2, $3, $4, $5, $6, $7)
 	`, s.tableName))
@@ -87,33 +87,33 @@ func (s *PostgresDriverSuite) TestLoad() {
 
 	_, err = stmt.Exec(
 		1,
+		"TestPayload",
 		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		phonyUUID(1),
 		0,
 		"AggregateType",
-		"TestPayload",
 		`{"Data": "AggregateID#1 - V0"}`,
 	)
 	s.NoError(err)
 
 	_, err = stmt.Exec(
 		2,
+		"TestPayload",
 		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		phonyUUID(2),
 		0,
 		"AggregateType",
-		"TestPayload",
 		`{"Data": "AggregateID#2 - V0"}`,
 	)
 	s.NoError(err)
 
 	_, err = stmt.Exec(
 		3,
+		"TestPayload",
 		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		phonyUUID(1),
 		1,
 		"AggregateType",
-		"TestPayload",
 		`{"Data": "AggregateID#1 - V1"}`,
 	)
 	s.NoError(err)
@@ -123,20 +123,20 @@ func (s *PostgresDriverSuite) TestLoad() {
 	s.Equal([]*es.Event{
 		{
 			ID:               "1",
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
 		},
 		{
 			ID:               "3",
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - V1"},
 		},
 	}, events)
@@ -146,11 +146,11 @@ func (s *PostgresDriverSuite) TestLoad() {
 	s.Equal([]*es.Event{
 		{
 			ID:               "2",
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#2 - V0"},
 		},
 	}, events)
@@ -159,24 +159,24 @@ func (s *PostgresDriverSuite) TestLoad() {
 func (s *PostgresDriverSuite) TestSave() {
 	events := []*es.Event{
 		{
+			Type:             "TestPayload",
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
 		},
 		{
+			Type:             "TestPayload",
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - V1"},
 		},
 		{
+			Type:             "TestPayload",
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#2 - V0"},
 		},
 	}
@@ -184,7 +184,17 @@ func (s *PostgresDriverSuite) TestSave() {
 	err := s.driver.Save(events)
 	s.NoError(err)
 
-	rows, err := s.db.Query(fmt.Sprintf(`SELECT ID, Created, AggregateID, AggregateVersion, AggregateType, Type, Payload FROM "%s"`, s.tableName))
+	rows, err := s.db.Query(fmt.Sprintf(`
+		SELECT
+			ID,
+			Type,
+			Created,
+			AggregateID,
+			AggregateVersion,
+			AggregateType,
+			Payload
+		FROM "%s"
+	`, s.tableName))
 	s.NoError(err)
 	result, err := readResult(rows)
 	s.NoError(err)
@@ -192,29 +202,29 @@ func (s *PostgresDriverSuite) TestSave() {
 	s.Equal([]*Row{
 		{
 			ID:               1,
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          []byte(`{"Data":"AggregateID#1 - V0"}`),
 		},
 		{
 			ID:               2,
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          []byte(`{"Data":"AggregateID#1 - V1"}`),
 		},
 		{
 			ID:               3,
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          []byte(`{"Data":"AggregateID#2 - V0"}`),
 		},
 	}, result)
@@ -223,11 +233,11 @@ func (s *PostgresDriverSuite) TestSave() {
 func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 	events := []*es.Event{
 		{
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
 		},
 	}
@@ -237,11 +247,11 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 
 	events = []*es.Event{
 		{
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
 		},
 	}
@@ -254,19 +264,19 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	events := []*es.Event{
 		{
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - TX"},
 		},
 		{
+			Type:             "TestPayload",
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Type:             "TestPayload",
 			Payload:          &TestPayload{Data: "AggregateID#1 - TX"},
 		},
 	}
@@ -293,11 +303,11 @@ func readResult(rows *sql.Rows) ([]*Row, error) {
 		var row Row
 		err := rows.Scan(
 			&row.ID,
+			&row.Type,
 			&row.Created,
 			&row.AggregateID,
 			&row.AggregateVersion,
 			&row.AggregateType,
-			&row.Type,
 			&row.Payload,
 		)
 		if err != nil {

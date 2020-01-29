@@ -11,13 +11,13 @@ import (
 
 const createTable = `
 	CREATE TABLE %s (
-		-- TODO: Author VARCHAR(255) NOT NULL,
 		ID               BIGSERIAL PRIMARY KEY,
+		Type             VARCHAR(255) NOT NULL,
+		-- TODO: Author VARCHAR(255) NOT NULL,
 		Created          TIMESTAMPTZ DEFAULT now() NOT NULL,
 		AggregateID      UUID NOT NULL,
 		AggregateVersion INT NOT NULL,
 		AggregateType    VARCHAR(255) NOT NULL,
-		Type             VARCHAR(255) NOT NULL,
 		Payload          JSON NOT NULL,
 
 		CONSTRAINT OptimisticLocking UNIQUE (AggregateID, AggregateVersion)
@@ -47,11 +47,11 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 	rows, err := d.DB.Query(fmt.Sprintf(`
 		SELECT
 			ID,
+			Type,
 			Created,
 			AggregateID,
 			AggregateVersion,
 			AggregateType,
-			Type,
 			Payload
 		FROM %s
 		WHERE AggregateID = $1
@@ -68,11 +68,11 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 		var rawPayload []byte
 		err := rows.Scan(
 			&event.ID,
+			&event.Type,
 			&event.Created,
 			&event.AggregateID,
 			&event.AggregateVersion,
 			&event.AggregateType,
-			&event.Type,
 			&rawPayload,
 		)
 		if err != nil {
@@ -107,10 +107,10 @@ func (d *PostgresDriver) Save(events []*Event) error {
 
 	stmt, err := tx.Prepare(fmt.Sprintf(`
 		INSERT INTO %s (
+			Type,
 			AggregateID,
 			AggregateVersion,
 			AggregateType,
-			Type,
 			Payload
 		) VALUES($1, $2, $3, $4, $5)
 	`, d.tableName()))
@@ -127,10 +127,10 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		}
 
 		_, err = stmt.Exec(
+			event.Type,
 			event.AggregateID,
 			event.AggregateVersion,
 			event.AggregateType,
-			event.Type,
 			payload,
 		)
 		if err != nil {
