@@ -23,7 +23,7 @@ func (TestPayload) AggregateType() string { return "AggregateType" }
 func init()                               { es.Register(TestPayload{}) }
 
 type Row struct {
-	ID               uint64
+	ID               int64
 	Type             string
 	Created          time.Time
 	AggregateID      string
