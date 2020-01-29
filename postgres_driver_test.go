@@ -12,9 +12,8 @@ import (
 
 type PostgresDriverSuite struct {
 	suite.Suite
-	db        *sql.DB
-	tableName string
-	driver    es.Driver
+	db     *sql.DB
+	driver es.Driver
 }
 
 type TestPayload struct{ Data string }
@@ -46,10 +45,8 @@ func (s *PostgresDriverSuite) SetupTest() {
 	`)
 	s.NoError(err)
 
-	s.tableName = "event_store"
 	postgresDriver := &es.PostgresDriver{
-		DB:    s.db,
-		Table: s.tableName,
+		DB: s.db,
 	}
 	err = postgresDriver.CreateTable()
 	s.NoError(err)
@@ -58,7 +55,7 @@ func (s *PostgresDriverSuite) SetupTest() {
 }
 
 func (s *PostgresDriverSuite) TearDownTest() {
-	_, err := s.db.Exec(fmt.Sprintf(`DROP TABLE IF EXISTS "%s"`, s.tableName))
+	_, err := s.db.Exec(`DROP TABLE IF EXISTS events`)
 	s.NoError(err)
 	_, err = s.db.Exec(`DROP SCHEMA IF EXISTS stub CASCADE`)
 	s.NoError(err)
@@ -71,8 +68,8 @@ func (s *PostgresDriverSuite) TestMustConnectPostgresPanics() {
 }
 
 func (s *PostgresDriverSuite) TestLoad() {
-	stmt, err := s.db.Prepare(fmt.Sprintf(`
-		INSERT INTO "%s" (
+	stmt, err := s.db.Prepare(`
+		INSERT INTO events (
 			ID,
 			Type,
 			Created,
@@ -81,7 +78,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 			AggregateType,
 			Payload
 		) VALUES($1, $2, $3, $4, $5, $6, $7)
-	`, s.tableName))
+	`)
 	s.NoError(err)
 	defer stmt.Close()
 
@@ -184,7 +181,7 @@ func (s *PostgresDriverSuite) TestSave() {
 	err := s.driver.Save(events)
 	s.NoError(err)
 
-	rows, err := s.db.Query(fmt.Sprintf(`
+	rows, err := s.db.Query(`
 		SELECT
 			ID,
 			Type,
@@ -193,8 +190,8 @@ func (s *PostgresDriverSuite) TestSave() {
 			AggregateVersion,
 			AggregateType,
 			Payload
-		FROM "%s"
-	`, s.tableName))
+		FROM events
+	`)
 	s.NoError(err)
 	result, err := readResult(rows)
 	s.NoError(err)
@@ -285,7 +282,7 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	s.Error(err)
 
 	var count int
-	result := s.db.QueryRow(fmt.Sprintf(`SELECT COUNT(*) FROM "%s"`, s.tableName))
+	result := s.db.QueryRow(`SELECT COUNT(*) FROM events`)
 	err = result.Scan(&count)
 	s.NoError(err)
 	s.Equal(0, count)
