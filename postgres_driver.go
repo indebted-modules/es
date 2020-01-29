@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lib/pq"
+	// Postgres driver
+	_ "github.com/lib/pq"
 )
 
 const createTable = `
-	CREATE TABLE %s (
+	CREATE TABLE events (
 		ID               BIGSERIAL PRIMARY KEY,
 		Type             VARCHAR(255) NOT NULL,
 		-- TODO: Author VARCHAR(255) NOT NULL,
@@ -26,15 +27,14 @@ const createTable = `
 
 // PostgresDriver implements a Postgres-backed event-store.
 type PostgresDriver struct {
-	DB    *sql.DB
-	Table string
+	DB *sql.DB
 }
 
 // CreateTable creates the event-store table with the necessary columns and
 // constraints. It's name is dictated by the `Table` property set when
 // initializing the `PostgresDriver` struct.
 func (d *PostgresDriver) CreateTable() error {
-	_, err := d.DB.Exec(fmt.Sprintf(createTable, d.tableName()))
+	_, err := d.DB.Exec(createTable)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (d *PostgresDriver) CreateTable() error {
 
 // Load loads all events for the given aggregateID ordered by version
 func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
-	rows, err := d.DB.Query(fmt.Sprintf(`
+	rows, err := d.DB.Query(`
 		SELECT
 			ID,
 			Type,
@@ -53,10 +53,10 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 			AggregateVersion,
 			AggregateType,
 			Payload
-		FROM %s
+		FROM events
 		WHERE AggregateID = $1
 		ORDER BY AggregateVersion
-	`, d.tableName()), aggregateID)
+	`, aggregateID)
 	if err != nil {
 		return []*Event{}, err
 	}
@@ -105,15 +105,15 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare(fmt.Sprintf(`
-		INSERT INTO %s (
+	stmt, err := tx.Prepare(`
+		INSERT INTO events (
 			Type,
 			AggregateID,
 			AggregateVersion,
 			AggregateType,
 			Payload
 		) VALUES($1, $2, $3, $4, $5)
-	`, d.tableName()))
+	`)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -145,10 +145,6 @@ func (d *PostgresDriver) Save(events []*Event) error {
 	}
 
 	return nil
-}
-
-func (d *PostgresDriver) tableName() string {
-	return pq.QuoteIdentifier(d.Table)
 }
 
 // MustConnectPostgres ensures a healthy connection is established with the
