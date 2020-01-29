@@ -3,6 +3,7 @@ package es
 import (
 	"database/sql"
 	"encoding/json"
+	"io"
 	"time"
 
 	// Postgres driver
@@ -60,7 +61,7 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer mustClose(rows)
 
 	var events []*Event
 	for rows.Next() {
@@ -124,7 +125,7 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		}
 		return err
 	}
-	defer stmt.Close()
+	defer mustClose(stmt)
 
 	for _, event := range events {
 		payload, err := json.Marshal(event.Payload)
@@ -180,4 +181,14 @@ func MustConnect(url string) *sql.DB {
 	db.SetMaxIdleConns(1)
 	db.SetMaxOpenConns(1)
 	return db
+}
+
+func mustClose(closer io.Closer) {
+	err := closer.Close()
+	if err != nil {
+		log.
+			Fatal().
+			Err(err).
+			Msg("Failed closing resource")
+	}
 }
