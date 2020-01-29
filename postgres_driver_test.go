@@ -40,7 +40,7 @@ func (s *PostgresDriverSuite) SetupTest() {
 	s.db = es.MustConnect("postgres://user:password@postgres/indebted?sslmode=disable")
 
 	_, err := s.db.Exec(`
-		CREATE SCHEMA stub; CREATE FUNCTION stub.now() RETURNS TIMESTAMPTZ LANGUAGE SQL AS $$ SELECT '2019-06-30 00:00+00'::timestamptz; $$;
+		CREATE SCHEMA stub; CREATE FUNCTION stub.now() RETURNS TIMESTAMPTZ LANGUAGE SQL AS $$ SELECT '1985-10-26 01:22+00'::timestamptz; $$;
 		SET search_path = stub,"$user",public,pg_catalog;
 	`)
 	s.NoError(err)
@@ -81,7 +81,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 	_, err = stmt.Exec(
 		1,
 		"TestPayload",
-		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(1),
 		0,
 		"AggregateType",
@@ -92,7 +92,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 	_, err = stmt.Exec(
 		2,
 		"TestPayload",
-		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(2),
 		0,
 		"AggregateType",
@@ -103,7 +103,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 	_, err = stmt.Exec(
 		3,
 		"TestPayload",
-		time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(1),
 		1,
 		"AggregateType",
@@ -117,7 +117,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 		{
 			ID:               "1",
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -126,7 +126,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 		{
 			ID:               "3",
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
@@ -140,7 +140,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 		{
 			ID:               "2",
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -196,7 +196,7 @@ func (s *PostgresDriverSuite) TestSave() {
 		{
 			ID:               1,
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -205,7 +205,7 @@ func (s *PostgresDriverSuite) TestSave() {
 		{
 			ID:               2,
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
@@ -214,7 +214,7 @@ func (s *PostgresDriverSuite) TestSave() {
 		{
 			ID:               3,
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -227,7 +227,7 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 	events := []*es.Event{
 		{
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -241,7 +241,7 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 	events = []*es.Event{
 		{
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -258,7 +258,7 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	events := []*es.Event{
 		{
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
@@ -266,7 +266,7 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 		},
 		{
 			Type:             "TestPayload",
-			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
