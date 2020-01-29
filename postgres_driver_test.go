@@ -286,7 +286,7 @@ func (s *PostgresDriverSuite) TestSaveInTransaction() {
 
 func (s *PostgresDriverSuite) TestSaveEmptyEvents() {
 	err := s.driver.Save([]*es.Event{})
-	s.Nil(err)
+	s.NoError(err)
 }
 
 func readResult(rows *sql.Rows) ([]*Row, error) {
