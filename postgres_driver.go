@@ -58,7 +58,7 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 		ORDER BY AggregateVersion
 	`, aggregateID)
 	if err != nil {
-		return []*Event{}, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -76,22 +76,22 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 			&rawPayload,
 		)
 		if err != nil {
-			return []*Event{}, err
+			return nil, err
 		}
 		typedPayload, err := resolveType(event.Type)
 		if err != nil {
-			return []*Event{}, err
+			return nil, err
 		}
 		err = json.Unmarshal(rawPayload, typedPayload)
 		if err != nil {
-			return []*Event{}, err
+			return nil, err
 		}
 		event.Payload = typedPayload
 		events = append(events, &event)
 	}
 	err = rows.Err()
 	if err != nil {
-		return []*Event{}, err
+		return nil, err
 	}
 	return events, nil
 }
