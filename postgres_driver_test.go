@@ -76,7 +76,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 		) VALUES($1, $2, $3, $4, $5, $6, $7)
 	`)
 	s.NoError(err)
-	defer stmt.Close()
+	defer es.ShouldClose(stmt)
 
 	_, err = stmt.Exec(
 		1,
@@ -290,7 +290,7 @@ func (s *PostgresDriverSuite) TestSaveEmptyEvents() {
 }
 
 func readResult(rows *sql.Rows) ([]*Row, error) {
-	defer rows.Close()
+	defer es.ShouldClose(rows)
 	var result []*Row
 	for rows.Next() {
 		var row Row

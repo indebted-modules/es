@@ -61,7 +61,7 @@ func (d *PostgresDriver) Load(aggregateID string) ([]*Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer mustClose(rows)
+	defer ShouldClose(rows)
 
 	var events []*Event
 	for rows.Next() {
@@ -125,7 +125,7 @@ func (d *PostgresDriver) Save(events []*Event) error {
 		}
 		return err
 	}
-	defer mustClose(stmt)
+	defer ShouldClose(stmt)
 
 	for _, event := range events {
 		payload, err := json.Marshal(event.Payload)
@@ -183,11 +183,11 @@ func MustConnect(url string) *sql.DB {
 	return db
 }
 
-func mustClose(closer io.Closer) {
+func ShouldClose(closer io.Closer) {
 	err := closer.Close()
 	if err != nil {
 		log.
-			Fatal().
+			Warn().
 			Err(err).
 			Msg("Failed closing resource")
 	}
