@@ -49,6 +49,7 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 
 	for _, event := range events {
 		event.ID = string(newSequence)
+		event.Created = time.Now()
 		newSequence++
 
 		r, err := toRecord(event)
