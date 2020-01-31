@@ -4,6 +4,8 @@ steps:
       - mmake lint
       - mmake dynamo.is-up
       - mmake test
+    agents:
+      queue: search
     plugins:
       - docker-compose#v3.1.0:
           run: dev
