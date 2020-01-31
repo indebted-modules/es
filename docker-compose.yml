@@ -13,6 +13,7 @@ services:
     depends_on:
       - dynamodb
       - postgres
+      - localstack
 
   dynamodb:
     image: amazon/dynamodb-local:1.11.477
@@ -23,3 +24,8 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: indebted
+
+  localstack:
+    image: localstack/localstack
+    environment:
+      - SERVICES=sns,sqs
