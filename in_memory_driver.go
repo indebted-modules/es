@@ -102,7 +102,7 @@ func (s *InMemoryDriver) Stream() []*Event {
 	}
 
 	sort.Slice(events, func(i, j int) bool {
-		return events[i].Created.Before(events[j].Created)
+		return events[i].ID < events[j].ID
 	})
 
 	return events
