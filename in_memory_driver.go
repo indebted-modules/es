@@ -11,12 +11,13 @@ import (
 
 // NewInMemoryDriver creates a new InMemoryDriver
 func NewInMemoryDriver() *InMemoryDriver {
-	return &InMemoryDriver{stream: map[string]map[int64]*record{}}
+	return &InMemoryDriver{sequence: 0, stream: map[string]map[int64]*record{}}
 }
 
 // InMemoryDriver implementation for unit testing
 type InMemoryDriver struct {
-	stream map[string]map[int64]*record
+	sequence int64
+	stream   map[string]map[int64]*record
 }
 
 // Load all events by aggregate ID
@@ -43,9 +44,13 @@ func (s *InMemoryDriver) Load(aggregateID string) ([]*Event, error) {
 // Save all events in memory
 func (s *InMemoryDriver) Save(events []*Event) error {
 	newStream := map[string]map[int64]*record{}
+	newSequence := s.sequence
 	deepCopy(s.stream, newStream)
 
 	for _, event := range events {
+		event.ID = string(newSequence)
+		newSequence++
+
 		r, err := toRecord(event)
 		if err != nil {
 			return err
@@ -63,6 +68,7 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 	}
 
 	deepCopy(newStream, s.stream)
+	s.sequence = newSequence
 	return nil
 }
 
