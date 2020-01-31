@@ -20,14 +20,14 @@ type SNSNotifierSuite struct {
 	snsSvc   *sns.SNS
 	sqsSvc   *sqs.SQS
 	topicArn *string
-	queueUrl *string
+	queueURL *string
 }
 
 func TestSNSNotifierSuite(t *testing.T) {
 	suite.Run(t, new(SNSNotifierSuite))
 }
 
-func (s *SNSNotifierSuite) SetupTest() {
+func (s *SNSNotifierSuite) SetupSuite() {
 	snsEndpoint := "http://localstack:4575"
 	sqsEndpoint := "http://localstack:4576"
 	s.Eventually(func() bool {
@@ -46,7 +46,7 @@ func (s *SNSNotifierSuite) SetupTest() {
 	s.sqsSvc = sqs.New(sess, aws.NewConfig().WithRegion("ap-southeast-2").WithCredentials(cred).WithEndpoint(sqsEndpoint))
 	queueResponse, err := s.sqsSvc.CreateQueue(&sqs.CreateQueueInput{QueueName: aws.String("test-queue")})
 	s.NoError(err)
-	s.queueUrl = queueResponse.QueueUrl
+	s.queueURL = queueResponse.QueueUrl
 
 	_, err = s.snsSvc.Subscribe(&sns.SubscribeInput{
 		Protocol: aws.String("sqs"),
@@ -56,22 +56,68 @@ func (s *SNSNotifierSuite) SetupTest() {
 	s.NoError(err)
 }
 
-func (s *SNSNotifierSuite) TearDownTest() {
-	_, err := s.sqsSvc.DeleteQueue(&sqs.DeleteQueueInput{QueueUrl: s.queueUrl})
+func (s *SNSNotifierSuite) TearDownSuite() {
+	_, err := s.sqsSvc.DeleteQueue(&sqs.DeleteQueueInput{QueueUrl: s.queueURL})
 	s.NoError(err)
 	_, err = s.snsSvc.DeleteTopic(&sns.DeleteTopicInput{TopicArn: s.topicArn})
 	s.NoError(err)
 }
 
-func (s *SNSNotifierSuite) TestPublish() {
-	notifier := es.NewSNSNotifier(s.snsSvc, *s.topicArn)
-	err := notifier.Publish(struct{ Content string }{Content: "some message"})
+func (s *SNSNotifierSuite) TestDelegateLoadToInternalDriver() {
+	fakeDriver := &FakeDriver{}
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
+
+	events, err := driver.Load("123")
+	s.Empty(events)
+	s.NoError(err)
+	s.True(fakeDriver.loadCalled)
+}
+
+func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenBrokenDriver() {
+	brokenDriver := &BrokenDriver{ErrorMessage: "borken!"}
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, brokenDriver)
+
+	err := driver.Save([]*es.Event{})
+	s.Error(err, "borken!")
+
+	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
+		QueueUrl:        s.queueURL,
+		WaitTimeSeconds: aws.Int64(1),
+	})
+	s.NoError(err)
+	s.Equal(0, len(response.Messages))
+}
+
+func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenNoEvents() {
+	fakeDriver := &FakeDriver{}
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
+
+	err := driver.Save([]*es.Event{})
+	s.NoError(err)
+	s.True(fakeDriver.saveCalled)
+
+	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
+		QueueUrl:        s.queueURL,
+		WaitTimeSeconds: aws.Int64(1),
+	})
+	s.NoError(err)
+	s.Equal(0, len(response.Messages))
+}
+
+func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicated() {
+	fakeDriver := &FakeDriver{}
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
+	err := driver.Save([]*es.Event{
+		{Type: "SomethingHappened"},
+		{Type: "SomethingHappened"},
+		{Type: "SomethingElseHappened"},
+		{Type: "SomethingElseHappened"},
+	})
 	s.NoError(err)
 
 	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
-		QueueUrl:            s.queueUrl,
-		MaxNumberOfMessages: aws.Int64(1),
-		WaitTimeSeconds:     aws.Int64(1),
+		QueueUrl:        s.queueURL,
+		WaitTimeSeconds: aws.Int64(1),
 	})
 	s.NoError(err)
 	s.Equal(1, len(response.Messages))
@@ -79,5 +125,5 @@ func (s *SNSNotifierSuite) TestPublish() {
 	body := &struct{ Message string }{}
 	err = json.Unmarshal([]byte(*response.Messages[0].Body), body)
 	s.NoError(err)
-	s.Equal(`{"Content":"some message"}`, body.Message)
+	s.Equal(`{"Types":["SomethingHappened","SomethingElseHappened"]}`, body.Message)
 }
