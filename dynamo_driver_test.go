@@ -27,7 +27,6 @@ func TestDynamoDriverSuite(t *testing.T) {
 }
 
 func (s *DynamoDriverSuite) SetupSuite() {
-	es.Register(EventType{})
 	s.TableName = fmt.Sprintf("store-test-%s", uuid.NewID())
 
 	s.Client = dynamodb.New(
@@ -80,11 +79,11 @@ func (s *DynamoDriverSuite) TestLoad() {
 		TableName: aws.String(s.TableName),
 		Item: map[string]*dynamodb.AttributeValue{
 			"ID":               {S: aws.String("load-event-id-1")},
-			"Type":             {S: aws.String("EventType")},
+			"Type":             {S: aws.String("SomethingHappened")},
 			"AggregateID":      {S: aws.String("load-aggregate-id")},
 			"AggregateType":    {S: aws.String("AggregateType")},
 			"AggregateVersion": {N: aws.String("0")},
-			"Payload":          {S: aws.String(`{"ID": "load-event-id-1"}`)},
+			"Payload":          {S: aws.String(`{"Data": "load-event-id-1"}`)},
 			"Created":          {S: aws.String("2019-06-30T00:00:00Z")},
 		},
 	})
@@ -94,11 +93,11 @@ func (s *DynamoDriverSuite) TestLoad() {
 		TableName: aws.String(s.TableName),
 		Item: map[string]*dynamodb.AttributeValue{
 			"ID":               {S: aws.String("load-event-id-2")},
-			"Type":             {S: aws.String("EventType")},
+			"Type":             {S: aws.String("SomethingHappened")},
 			"AggregateID":      {S: aws.String("load-aggregate-id")},
 			"AggregateType":    {S: aws.String("AggregateType")},
 			"AggregateVersion": {N: aws.String("1")},
-			"Payload":          {S: aws.String(`{"ID": "load-event-id-2"}`)},
+			"Payload":          {S: aws.String(`{"Data": "load-event-id-2"}`)},
 			"Created":          {S: aws.String("2019-06-30T00:00:00Z")},
 		},
 	})
@@ -108,11 +107,11 @@ func (s *DynamoDriverSuite) TestLoad() {
 		TableName: aws.String(s.TableName),
 		Item: map[string]*dynamodb.AttributeValue{
 			"ID":               {S: aws.String("load-event-id-3")},
-			"Type":             {S: aws.String("EventType")},
+			"Type":             {S: aws.String("SomethingHappened")},
 			"AggregateID":      {S: aws.String("load-another-aggregate-id")},
 			"AggregateType":    {S: aws.String("AggregateType")},
 			"AggregateVersion": {N: aws.String("0")},
-			"Payload":          {S: aws.String(`{"ID": "load-event-id-3"}`)},
+			"Payload":          {S: aws.String(`{"Data": "load-event-id-3"}`)},
 			"Created":          {S: aws.String("2019-06-30T00:00:00Z")},
 		},
 	})
@@ -124,21 +123,21 @@ func (s *DynamoDriverSuite) TestLoad() {
 
 	s.Equal(&es.Event{
 		ID:               "load-event-id-1",
-		Type:             "EventType",
+		Type:             "SomethingHappened",
 		AggregateID:      "load-aggregate-id",
 		AggregateType:    "AggregateType",
 		AggregateVersion: 0,
-		Payload:          &EventType{ID: "load-event-id-1"},
+		Payload:          &SomethingHappened{Data: "load-event-id-1"},
 		Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 	}, events[0])
 
 	s.Equal(&es.Event{
 		ID:               "load-event-id-2",
-		Type:             "EventType",
+		Type:             "SomethingHappened",
 		AggregateID:      "load-aggregate-id",
 		AggregateType:    "AggregateType",
 		AggregateVersion: 1,
-		Payload:          &EventType{ID: "load-event-id-2"},
+		Payload:          &SomethingHappened{Data: "load-event-id-2"},
 		Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 	}, events[1])
 
@@ -148,11 +147,11 @@ func (s *DynamoDriverSuite) TestLoad() {
 
 	s.Equal(&es.Event{
 		ID:               "load-event-id-3",
-		Type:             "EventType",
+		Type:             "SomethingHappened",
 		AggregateID:      "load-another-aggregate-id",
 		AggregateType:    "AggregateType",
 		AggregateVersion: 0,
-		Payload:          &EventType{ID: "load-event-id-3"},
+		Payload:          &SomethingHappened{Data: "load-event-id-3"},
 		Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 	}, events[0])
 }
@@ -161,29 +160,29 @@ func (s *DynamoDriverSuite) TestSave() {
 	events := []*es.Event{
 		{
 			ID:               "save-event-id-1",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "save-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 0,
-			Payload:          &EventType{ID: "save-event-id-1"},
+			Payload:          &SomethingHappened{Data: "save-event-id-1"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			ID:               "save-event-id-2",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "save-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 1,
-			Payload:          &EventType{ID: "save-event-id-2"},
+			Payload:          &SomethingHappened{Data: "save-event-id-2"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			ID:               "save-event-id-3",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "save-another-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 0,
-			Payload:          &EventType{ID: "save-event-id-3"},
+			Payload:          &SomethingHappened{Data: "save-event-id-3"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 	}
@@ -198,31 +197,31 @@ func (s *DynamoDriverSuite) TestSave() {
 
 	s.Contains(out.Items, map[string]*dynamodb.AttributeValue{
 		"ID":               {S: aws.String("save-event-id-1")},
-		"Type":             {S: aws.String("EventType")},
+		"Type":             {S: aws.String("SomethingHappened")},
 		"AggregateID":      {S: aws.String("save-aggregate-id")},
 		"AggregateType":    {S: aws.String("AggregateType")},
 		"AggregateVersion": {N: aws.String("0")},
-		"Payload":          {S: aws.String(`{"ID":"save-event-id-1"}`)},
+		"Payload":          {S: aws.String(`{"Data":"save-event-id-1"}`)},
 		"Created":          {S: aws.String("2019-06-30T00:00:00Z")},
 	})
 
 	s.Contains(out.Items, map[string]*dynamodb.AttributeValue{
 		"ID":               {S: aws.String("save-event-id-2")},
-		"Type":             {S: aws.String("EventType")},
+		"Type":             {S: aws.String("SomethingHappened")},
 		"AggregateID":      {S: aws.String("save-aggregate-id")},
 		"AggregateType":    {S: aws.String("AggregateType")},
 		"AggregateVersion": {N: aws.String("1")},
-		"Payload":          {S: aws.String(`{"ID":"save-event-id-2"}`)},
+		"Payload":          {S: aws.String(`{"Data":"save-event-id-2"}`)},
 		"Created":          {S: aws.String("2019-06-30T00:00:00Z")},
 	})
 
 	s.Contains(out.Items, map[string]*dynamodb.AttributeValue{
 		"ID":               {S: aws.String("save-event-id-3")},
-		"Type":             {S: aws.String("EventType")},
+		"Type":             {S: aws.String("SomethingHappened")},
 		"AggregateID":      {S: aws.String("save-another-aggregate-id")},
 		"AggregateType":    {S: aws.String("AggregateType")},
 		"AggregateVersion": {N: aws.String("0")},
-		"Payload":          {S: aws.String(`{"ID":"save-event-id-3"}`)},
+		"Payload":          {S: aws.String(`{"Data":"save-event-id-3"}`)},
 		"Created":          {S: aws.String("2019-06-30T00:00:00Z")},
 	})
 }
@@ -231,11 +230,11 @@ func (s *DynamoDriverSuite) TestSaveOptimisticLocking() {
 	events := []*es.Event{
 		{
 			ID:               "lock-event-id-1",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "lock-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 0,
-			Payload:          &EventType{ID: "lock-event-id-1"},
+			Payload:          &SomethingHappened{Data: "lock-event-id-1"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 	}
@@ -246,11 +245,11 @@ func (s *DynamoDriverSuite) TestSaveOptimisticLocking() {
 	events = []*es.Event{
 		{
 			ID:               "lock-event-id-2",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "lock-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 0,
-			Payload:          &EventType{ID: "lock-event-id-2"},
+			Payload:          &SomethingHappened{Data: "lock-event-id-2"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 	}
@@ -263,20 +262,20 @@ func (s *DynamoDriverSuite) TestSaveInTransaction() {
 	events := []*es.Event{
 		{
 			ID:               "tx-event-id-1",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "tx-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 0,
-			Payload:          &EventType{ID: "tx-event-id-1"},
+			Payload:          &SomethingHappened{Data: "tx-event-id-1"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			ID:               "tx-event-id-2",
-			Type:             "EventType",
+			Type:             "SomethingHappened",
 			AggregateID:      "tx-aggregate-id",
 			AggregateType:    "AggregateType",
 			AggregateVersion: 0,
-			Payload:          &EventType{ID: "tx-event-id-2"},
+			Payload:          &SomethingHappened{Data: "tx-event-id-2"},
 			Created:          time.Date(2019, 6, 30, 0, 0, 0, 0, time.UTC),
 		},
 	}
@@ -288,10 +287,10 @@ func (s *DynamoDriverSuite) TestSaveInTransaction() {
 		TableName:      aws.String(s.TableName),
 		ConsistentRead: aws.Bool(true),
 		Key: map[string]*dynamodb.AttributeValue{
-			"AggregateID": &dynamodb.AttributeValue{
+			"AggregateID": {
 				S: aws.String("tx-aggregate-id"),
 			},
-			"AggregateVersion": &dynamodb.AttributeValue{
+			"AggregateVersion": {
 				N: aws.String("0"),
 			},
 		},

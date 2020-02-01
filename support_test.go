@@ -53,19 +53,6 @@ func (SomethingElseHappened) AggregateType() string {
 	return "AnotherSampleAggregate"
 }
 
-// EventType .
-type EventType struct {
-	ID string
-}
-
-func (EventType) PayloadType() string {
-	return "EventType"
-}
-
-func (EventType) AggregateType() string {
-	return "AggregateType"
-}
-
 func init() {
 	es.Register(SomethingHappened{})
 	es.Register(SomethingElseHappened{})
