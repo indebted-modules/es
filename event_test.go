@@ -13,21 +13,9 @@ type EventSuite struct {
 	suite.Suite
 }
 
-type SampleAggregate struct {
-	es.Versionable
-}
-
-type AnotherSampleAggregate struct {
-	es.Versionable
-}
-
 func TestEventSuite(t *testing.T) {
 	suite.Run(t, new(EventSuite))
 }
-
-func (SampleAggregate) Reduce(typ string, payload interface{}) {}
-
-func (AnotherSampleAggregate) Reduce(typ string, payload interface{}) {}
 
 func (s *EventSuite) TestNewEvent() {
 	somethingHappened := &SomethingHappened{}

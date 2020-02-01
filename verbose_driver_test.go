@@ -15,21 +15,6 @@ func TestVerboseDriverSuite(t *testing.T) {
 	suite.Run(t, new(VerboseDriverSuite))
 }
 
-type FakeDriver struct {
-	loadCalled bool
-	saveCalled bool
-}
-
-func (d *FakeDriver) Load(aggregateID string) ([]*es.Event, error) {
-	d.loadCalled = true
-	return nil, nil
-}
-
-func (d *FakeDriver) Save(events []*es.Event) error {
-	d.saveCalled = true
-	return nil
-}
-
 func (s *VerboseDriverSuite) TestDelegateLoadToInternalDriver() {
 	fakeDriver := &FakeDriver{}
 	verboseDriver := es.NewVerboseDriver(fakeDriver)

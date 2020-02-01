@@ -22,18 +22,6 @@ type DynamoDriverSuite struct {
 	TableName string
 }
 
-type EventType struct {
-	ID string
-}
-
-func (EventType) PayloadType() string {
-	return "EventType"
-}
-
-func (EventType) AggregateType() string {
-	return "AggregateType"
-}
-
 func TestDynamoDriverSuite(t *testing.T) {
 	suite.Run(t, new(DynamoDriverSuite))
 }

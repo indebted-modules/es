@@ -15,22 +15,6 @@ func TestRegistrySuite(t *testing.T) {
 	suite.Run(t, new(RegistrySuite))
 }
 
-type SomethingHappened struct{}
-
-func (SomethingHappened) PayloadType() string {
-	return "SomethingHappened"
-}
-func (SomethingHappened) AggregateType() string {
-	return "SampleAggregate"
-}
-
-type SomethingElseHappened struct{}
-
-func (SomethingElseHappened) PayloadType() string { return "SomethingElseHappened" }
-func (SomethingElseHappened) AggregateType() string {
-	return "AnotherSampleAggregate"
-}
-
 func (s *RegistrySuite) TestResolveTypeFailsIfTypeNotRegistered() {
 	r := es.NewRegistry()
 	event, err := r.ResolveType("UnregisteredType")
