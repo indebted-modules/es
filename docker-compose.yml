@@ -9,6 +9,7 @@ services:
       - ./.tmp/mmake:/usr/local/include/github.com
     environment:
       - DYNAMO_URL=http://dynamodb:8000
+      - POSTGRES_URL=postgres://user:password@postgres/indebted?sslmode=disable
     depends_on:
       - dynamodb
       - postgres

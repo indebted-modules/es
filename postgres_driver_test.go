@@ -3,6 +3,7 @@ package es_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ func TestPostgresDriverSuite(t *testing.T) {
 }
 
 func (s *PostgresDriverSuite) SetupTest() {
-	s.db = es.MustConnect("postgres://user:password@postgres/indebted?sslmode=disable")
+	s.db = es.MustConnect(os.Getenv("POSTGRES_URL"))
 
 	_, err := s.db.Exec(`
 		CREATE SCHEMA stub; CREATE FUNCTION stub.now() RETURNS TIMESTAMPTZ LANGUAGE SQL AS $$ SELECT '1985-10-26 01:22+00'::timestamptz; $$;
