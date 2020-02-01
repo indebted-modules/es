@@ -6,7 +6,7 @@ import (
 	"github.com/indebted-modules/es"
 )
 
-// SampleAggregate .
+// SampleAggregate sample aggregate for testing
 type SampleAggregate struct {
 	es.Versionable
 	ReducedData []string
@@ -20,7 +20,7 @@ func (s *SampleAggregate) Reduce(typ string, payload interface{}) {
 	}
 }
 
-// DoSomething command does validation and returns events
+// DoSomething commands do validation and return events
 func (s *SampleAggregate) DoSomething(id string, data []string) []*es.AppliedEvent {
 	events := []*es.Event{}
 
@@ -31,7 +31,7 @@ func (s *SampleAggregate) DoSomething(id string, data []string) []*es.AppliedEve
 	return s.Apply(s, events)
 }
 
-// AnotherSampleAggregate .
+// AnotherSampleAggregate another sample aggregate for testing
 type AnotherSampleAggregate struct {
 	es.Versionable
 	ReducedData []string
@@ -45,7 +45,7 @@ func (a *AnotherSampleAggregate) Reduce(typ string, payload interface{}) {
 	}
 }
 
-// DoSomethingElse command does validation and returns events
+// DoSomethingElse commands do validation and return events
 func (a *AnotherSampleAggregate) DoSomethingElse(id string, data []string) []*es.AppliedEvent {
 	events := []*es.Event{}
 
@@ -56,7 +56,7 @@ func (a *AnotherSampleAggregate) DoSomethingElse(id string, data []string) []*es
 	return a.Apply(a, events)
 }
 
-// BrokenDriver .
+// BrokenDriver always returns error for testing error cases
 type BrokenDriver struct {
 	ErrorMessage string
 }
@@ -69,7 +69,7 @@ func (d *BrokenDriver) Save(_ []*es.Event) error {
 	return fmt.Errorf(d.ErrorMessage)
 }
 
-// SomethingHappened .
+// SomethingHappened event sample for testing
 type SomethingHappened struct {
 	Data string
 }
@@ -82,7 +82,7 @@ func (SomethingHappened) AggregateType() string {
 	return "SampleAggregate"
 }
 
-// SomethingElseHappened
+// SomethingElseHappened another event sample for testing
 type SomethingElseHappened struct {
 	Data string
 }
