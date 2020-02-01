@@ -39,6 +39,20 @@ func (s *StoreSuite) TestStoreLoad() {
 	s.Equal([]string{"event-3", "event-4", "event-5"}, anotherAggregate.ReducedData)
 }
 
+func (s *StoreSuite) TestStoreSave() {
+	driver := es.NewInMemoryDriver()
+	store := es.NewStore(driver)
+
+	sampleAggregate := &SampleAggregate{}
+	err := store.Save(sampleAggregate.DoSomething("1", []string{"event-1", "event-2"}))
+	s.NoError(err)
+
+	stream := driver.Stream()
+	s.Equal(2, len(stream))
+	s.Equal(stream[0].Payload, &SomethingHappened{Data: "event-1"})
+	s.Equal(stream[1].Payload, &SomethingHappened{Data: "event-2"})
+}
+
 func (s *StoreSuite) TestLoadWithEmptyAggregateID() {
 	store := es.NewStore(&BrokenDriver{ErrorMessage: "driver should not have been called"})
 

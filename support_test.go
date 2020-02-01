@@ -20,6 +20,17 @@ func (s *SampleAggregate) Reduce(typ string, payload interface{}) {
 	}
 }
 
+// DoSomething command does validation and returns events
+func (s *SampleAggregate) DoSomething(id string, data []string) []*es.AppliedEvent {
+	events := []*es.Event{}
+
+	for i := range data {
+		events = append(events, es.NewEvent(id, &SomethingHappened{Data: data[i]}))
+	}
+
+	return s.Apply(s, events)
+}
+
 // AnotherSampleAggregate .
 type AnotherSampleAggregate struct {
 	es.Versionable
@@ -32,6 +43,17 @@ func (a *AnotherSampleAggregate) Reduce(typ string, payload interface{}) {
 		event := payload.(*SomethingElseHappened)
 		a.ReducedData = append(a.ReducedData, event.Data)
 	}
+}
+
+// DoSomethingElse command does validation and returns events
+func (a *AnotherSampleAggregate) DoSomethingElse(id string, data []string) []*es.AppliedEvent {
+	events := []*es.Event{}
+
+	for i := range data {
+		events = append(events, es.NewEvent(id, &SomethingElseHappened{Data: data[i]}))
+	}
+
+	return a.Apply(a, events)
 }
 
 // BrokenDriver .
