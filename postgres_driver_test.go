@@ -16,12 +16,6 @@ type PostgresDriverSuite struct {
 	driver es.Driver
 }
 
-type TestPayload struct{ Data string }
-
-func (TestPayload) PayloadType() string   { return "TestPayload" }
-func (TestPayload) AggregateType() string { return "AggregateType" }
-func init()                               { es.Register(TestPayload{}) }
-
 type Row struct {
 	ID               int64
 	Type             string
@@ -80,7 +74,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 
 	_, err = stmt.Exec(
 		1,
-		"TestPayload",
+		"SomethingHappened",
 		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(1),
 		0,
@@ -91,7 +85,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 
 	_, err = stmt.Exec(
 		2,
-		"TestPayload",
+		"SomethingHappened",
 		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(2),
 		0,
@@ -102,7 +96,7 @@ func (s *PostgresDriverSuite) TestLoad() {
 
 	_, err = stmt.Exec(
 		3,
-		"TestPayload",
+		"SomethingHappened",
 		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(1),
 		1,
@@ -116,21 +110,21 @@ func (s *PostgresDriverSuite) TestLoad() {
 	s.Equal([]*es.Event{
 		{
 			ID:               "1",
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V0"},
 		},
 		{
 			ID:               "3",
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - V1"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
 		},
 	}, events)
 
@@ -139,12 +133,12 @@ func (s *PostgresDriverSuite) TestLoad() {
 	s.Equal([]*es.Event{
 		{
 			ID:               "2",
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#2 - V0"},
+			Payload:          &SomethingHappened{Data: "AggregateID#2 - V0"},
 		},
 	}, events)
 }
@@ -152,25 +146,25 @@ func (s *PostgresDriverSuite) TestLoad() {
 func (s *PostgresDriverSuite) TestSave() {
 	events := []*es.Event{
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V0"},
 		},
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - V1"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
 		},
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#2 - V0"},
+			Payload:          &SomethingHappened{Data: "AggregateID#2 - V0"},
 		},
 	}
 
@@ -195,7 +189,7 @@ func (s *PostgresDriverSuite) TestSave() {
 	s.Equal([]*Row{
 		{
 			ID:               1,
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
@@ -204,7 +198,7 @@ func (s *PostgresDriverSuite) TestSave() {
 		},
 		{
 			ID:               2,
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 1,
@@ -213,7 +207,7 @@ func (s *PostgresDriverSuite) TestSave() {
 		},
 		{
 			ID:               3,
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
 			AggregateVersion: 0,
@@ -226,12 +220,12 @@ func (s *PostgresDriverSuite) TestSave() {
 func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 	events := []*es.Event{
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V0"},
 		},
 	}
 
@@ -240,12 +234,12 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 
 	events = []*es.Event{
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - V0"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V0"},
 		},
 	}
 
@@ -257,20 +251,20 @@ func (s *PostgresDriverSuite) TestSaveOptimisticLocking() {
 func (s *PostgresDriverSuite) TestSaveInTransaction() {
 	events := []*es.Event{
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - TX"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - TX"},
 		},
 		{
-			Type:             "TestPayload",
+			Type:             "SomethingHappened",
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      "AggregateID#1 - TX",
 			AggregateVersion: 0,
 			AggregateType:    "AggregateType",
-			Payload:          &TestPayload{Data: "AggregateID#1 - TX"},
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - TX"},
 		},
 	}
 
