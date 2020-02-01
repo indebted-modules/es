@@ -2,6 +2,7 @@ package es_test
 
 import (
 	"fmt"
+
 	"github.com/indebted-modules/es"
 )
 
@@ -14,7 +15,7 @@ type SampleAggregate struct {
 func (s *SampleAggregate) Reduce(typ string, payload interface{}) {
 	switch typ {
 	case "SomethingHappened":
-		event := payload.(SomethingHappened)
+		event := payload.(*SomethingHappened)
 		s.ReducedData = append(s.ReducedData, event.Data)
 	}
 }
@@ -28,7 +29,7 @@ type AnotherSampleAggregate struct {
 func (a *AnotherSampleAggregate) Reduce(typ string, payload interface{}) {
 	switch typ {
 	case "SomethingElseHappened":
-		event := payload.(SomethingElseHappened)
+		event := payload.(*SomethingElseHappened)
 		a.ReducedData = append(a.ReducedData, event.Data)
 	}
 }
