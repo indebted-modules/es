@@ -29,6 +29,7 @@ func (d *BrokenDriver) Save(_ []*es.Event) error {
 
 // SomethingHappened .
 type SomethingHappened struct {
+	Data string
 }
 
 func (SomethingHappened) PayloadType() string {
@@ -41,6 +42,7 @@ func (SomethingHappened) AggregateType() string {
 
 // SomethingElseHappened
 type SomethingElseHappened struct {
+	Data string
 }
 
 func (SomethingElseHappened) PayloadType() string {
