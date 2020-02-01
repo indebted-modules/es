@@ -16,20 +16,21 @@ func TestVerboseDriverSuite(t *testing.T) {
 }
 
 func (s *VerboseDriverSuite) TestDelegateLoadToInternalDriver() {
-	fakeDriver := &FakeDriver{}
-	verboseDriver := es.NewVerboseDriver(fakeDriver)
+	driver := es.NewInMemoryDriver()
+	err := driver.Save([]*es.Event{es.NewEvent("123", &SomethingHappened{})})
+	s.NoError(err)
 
+	verboseDriver := es.NewVerboseDriver(driver)
 	events, err := verboseDriver.Load("123")
-	s.Nil(events)
-	s.Nil(err)
-	s.True(fakeDriver.loadCalled)
+	s.NoError(err)
+	s.Equal(&SomethingHappened{}, events[0].Payload)
 }
 
 func (s *VerboseDriverSuite) TestDelegateSaveToInternalDriver() {
-	fakeDriver := &FakeDriver{}
-	verboseDriver := es.NewVerboseDriver(fakeDriver)
+	driver := es.NewInMemoryDriver()
+	verboseDriver := es.NewVerboseDriver(driver)
 
-	err := verboseDriver.Save([]*es.Event{})
-	s.Nil(err)
-	s.True(fakeDriver.saveCalled)
+	err := verboseDriver.Save([]*es.Event{es.NewEvent("123", &SomethingHappened{})})
+	s.NoError(err)
+	s.Equal(&SomethingHappened{}, driver.Stream()[0].Payload)
 }

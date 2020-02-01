@@ -14,22 +14,6 @@ func (SampleAggregate) Reduce(typ string, payload interface{}) {
 
 }
 
-// FakeDriver .
-type FakeDriver struct {
-	loadCalled bool
-	saveCalled bool
-}
-
-func (d *FakeDriver) Load(aggregateID string) ([]*es.Event, error) {
-	d.loadCalled = true
-	return nil, nil
-}
-
-func (d *FakeDriver) Save(events []*es.Event) error {
-	d.saveCalled = true
-	return nil
-}
-
 // BrokenDriver .
 type BrokenDriver struct {
 	ErrorMessage string
@@ -78,4 +62,9 @@ func (EventType) PayloadType() string {
 
 func (EventType) AggregateType() string {
 	return "AggregateType"
+}
+
+func init() {
+	es.Register(SomethingHappened{})
+	es.Register(SomethingElseHappened{})
 }
