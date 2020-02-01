@@ -8,10 +8,29 @@ import (
 // SampleAggregate .
 type SampleAggregate struct {
 	es.Versionable
+	ReducedData []string
 }
 
-func (SampleAggregate) Reduce(typ string, payload interface{}) {
+func (s *SampleAggregate) Reduce(typ string, payload interface{}) {
+	switch typ {
+	case "SomethingHappened":
+		event := payload.(SomethingHappened)
+		s.ReducedData = append(s.ReducedData, event.Data)
+	}
+}
 
+// AnotherSampleAggregate .
+type AnotherSampleAggregate struct {
+	es.Versionable
+	ReducedData []string
+}
+
+func (a *AnotherSampleAggregate) Reduce(typ string, payload interface{}) {
+	switch typ {
+	case "SomethingElseHappened":
+		event := payload.(SomethingElseHappened)
+		a.ReducedData = append(a.ReducedData, event.Data)
+	}
 }
 
 // BrokenDriver .
