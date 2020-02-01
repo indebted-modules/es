@@ -1,7 +1,6 @@
 package es_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/indebted-modules/es"
