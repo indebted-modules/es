@@ -74,11 +74,11 @@ func (s *SNSNotifierSuite) TestDelegateLoadToInternalDriver() {
 }
 
 func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenBrokenDriver() {
-	brokenDriver := &BrokenDriver{ErrorMessage: "borken!"}
+	brokenDriver := &BrokenDriver{ErrorMessage: "borked!"}
 	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, brokenDriver)
 
 	err := driver.Save([]*es.Event{})
-	s.Error(err, "borken!")
+	s.Error(err, "borked!")
 
 	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
 		QueueUrl:        s.queueURL,
