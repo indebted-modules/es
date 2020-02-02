@@ -104,7 +104,7 @@ func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenNoEvents() {
 	s.Equal(0, len(response.Messages))
 }
 
-func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicated() {
+func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicatedEventTypes() {
 	fakeDriver := &FakeDriver{}
 	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
 	err := driver.Save([]*es.Event{
@@ -114,6 +114,7 @@ func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicated() {
 		{Type: "SomethingElseHappened"},
 	})
 	s.NoError(err)
+	s.True(fakeDriver.saveCalled)
 
 	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
 		QueueUrl:        s.queueURL,
