@@ -25,7 +25,7 @@ type SNSDriver struct {
 	driver   Driver
 }
 
-type snsPacket struct {
+type snsMessage struct {
 	Types []string
 }
 
@@ -46,7 +46,7 @@ func (d *SNSDriver) Save(events []*Event) error {
 	}
 
 	types := d.extractEventTypes(events)
-	err = d.publish(snsPacket{Types: types})
+	err = d.publish(snsMessage{Types: types})
 	if err != nil {
 		log.
 			Warn().
