@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/rs/zerolog/log"
 )
 
 // NewSNSDriver creates an SNSDriver
@@ -47,7 +48,10 @@ func (d *SNSDriver) Save(events []*Event) error {
 	types := d.extractEventTypes(events)
 	err = d.publish(snsPacket{Types: types})
 	if err != nil {
-		return err // TODO: return error? log? relaxed approach to notifying?
+		log.
+			Warn().
+			Err(err).
+			Msg("Failed publishing to SNS")
 	}
 
 	return nil
