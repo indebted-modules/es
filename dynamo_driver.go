@@ -26,6 +26,10 @@ type DynamoDriver struct {
 	TableName string
 }
 
+func (s *DynamoDriver) LoadSlice() ([]*Event, error) {
+	panic("implement me")
+}
+
 // Load all events by aggregate ID
 func (s *DynamoDriver) Load(aggregateID string) ([]*Event, error) {
 	out, err := s.Client.Query(&dynamodb.QueryInput{

@@ -20,6 +20,11 @@ type InMemoryDriver struct {
 	stream   map[string]map[int64]*record
 }
 
+func (s *InMemoryDriver) LoadSlice() ([]*Event, error) {
+	events := s.Stream()
+	return events, nil
+}
+
 // Load all events by aggregate ID
 func (s *InMemoryDriver) Load(aggregateID string) ([]*Event, error) {
 	records := s.stream[aggregateID]

@@ -31,6 +31,10 @@ type PostgresDriver struct {
 	DB *sql.DB
 }
 
+func (d *PostgresDriver) LoadSlice() ([]*Event, error) {
+	panic("implement me")
+}
+
 // CreateTable creates the event-store table with the necessary columns and
 // constraints. It's name is dictated by the `Table` property set when
 // initializing the `PostgresDriver` struct.

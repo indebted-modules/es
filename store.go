@@ -7,6 +7,11 @@ type Store struct {
 
 // NewStore creates a new store
 func NewStore(driver Driver) *Store {
+	return NewStoreWithSliceSize(driver, 100)
+}
+
+// NewStoreWithSliceSize creates a new store
+func NewStoreWithSliceSize(driver Driver, sliceSize int) *Store {
 	return &Store{
 		driver: driver,
 	}
@@ -36,4 +41,16 @@ func (s *Store) Save(appliedEvents []*AppliedEvent) error {
 		events = append(events, appliedEvent.Event)
 	}
 	return s.driver.Save(events)
+}
+
+func (s *Store) LoadProjection(projection Projection) error {
+	events, err := s.driver.LoadSlice()
+	if err != nil {
+		return err
+	}
+
+	for _, event := range events {
+		projection.Reduce(event)
+	}
+	return nil
 }

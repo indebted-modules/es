@@ -61,6 +61,10 @@ type BrokenDriver struct {
 	ErrorMessage string
 }
 
+func (d *BrokenDriver) LoadSlice() ([]*es.Event, error) {
+	panic("implement me")
+}
+
 func (d *BrokenDriver) Load(_ string) ([]*es.Event, error) {
 	return nil, fmt.Errorf(d.ErrorMessage)
 }

@@ -27,7 +27,6 @@ func (s *StoreSuite) TestStoreLoad() {
 	s.NoError(err)
 
 	store := es.NewStore(driver)
-
 	sampleAggregate := &SampleAggregate{}
 	err = store.Load("1", sampleAggregate)
 	s.NoError(err)
@@ -53,6 +52,20 @@ func (s *StoreSuite) TestStoreSave() {
 	s.Equal(stream[1].Payload, &SomethingHappened{Data: "event-2"})
 }
 
+func (s *StoreSuite) TestLoadProjection() {
+	driver := es.NewInMemoryDriver()
+	err := driver.Save([]*es.Event{
+		es.NewEvent("1", &TaskCreated{Description: "Do the dishes"}),
+		es.NewEvent("2", &TaskCreated{Description: "Cook rice"}),
+	})
+	store := es.NewStore(driver)
+
+	tasks := &TasksProjection{Tasks: map[string]string{}}
+	err = store.LoadProjection(tasks)
+	s.NoError(err)
+	s.Equal(tasks.Tasks, map[string]string{"1": "Do the dishes", "2": "Cook rice"})
+}
+
 func (s *StoreSuite) TestLoadWithEmptyAggregateID() {
 	store := es.NewStore(&BrokenDriver{ErrorMessage: "driver should not have been called"})
 
@@ -62,7 +75,31 @@ func (s *StoreSuite) TestLoadWithEmptyAggregateID() {
 	s.NoError(err)
 }
 
-func (s *StoreSuite) evtVersion(event *es.Event, version int64) *es.Event {
-	event.AggregateVersion = version
-	return event
+func (s *StoreSuite) evtVersion(event *es.Event, version int64) *es.Event{
+		event.AggregateVersion = version
+		return event
+	}
+
+type TaskCreated struct {
+	Description string
+}
+
+func (t *TaskCreated) PayloadType() string {
+	return "TaskCreated"
+}
+
+func (t *TaskCreated) AggregateType() string {
+	return "Task"
+}
+
+type TasksProjection struct {
+	Tasks map[string]string
+}
+
+func (t *TasksProjection) Reduce(event *es.Event) {
+	switch event.Type {
+	case "TaskCreated":
+		taskCreated := event.Payload.(TaskCreated)
+		t.Tasks[event.ID] = taskCreated.Description
+	}
 }
