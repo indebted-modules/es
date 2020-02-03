@@ -64,13 +64,15 @@ func (s *SNSNotifierSuite) TearDownSuite() {
 }
 
 func (s *SNSNotifierSuite) TestDelegateLoadToInternalDriver() {
-	fakeDriver := &FakeDriver{}
-	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
+	inMemoryDriver := es.NewInMemoryDriver()
+	err := inMemoryDriver.Save([]*es.Event{es.NewEvent("123", &SomethingHappened{})})
+	s.NoError(err)
+
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, inMemoryDriver)
 
 	events, err := driver.Load("123")
-	s.Empty(events)
 	s.NoError(err)
-	s.True(fakeDriver.loadCalled)
+	s.Equal(&SomethingHappened{}, events[0].Payload)
 }
 
 func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenBrokenDriver() {
@@ -89,12 +91,11 @@ func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenBrokenDriver() {
 }
 
 func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenNoEvents() {
-	fakeDriver := &FakeDriver{}
-	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
+	inMemoryDriver := es.NewInMemoryDriver()
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, inMemoryDriver)
 
 	err := driver.Save([]*es.Event{})
 	s.NoError(err)
-	s.True(fakeDriver.saveCalled)
 
 	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
 		QueueUrl:        s.queueURL,
@@ -105,16 +106,15 @@ func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenNoEvents() {
 }
 
 func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicatedEventTypes() {
-	fakeDriver := &FakeDriver{}
-	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, fakeDriver)
+	inMemoryDriver := es.NewInMemoryDriver()
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, inMemoryDriver)
 	err := driver.Save([]*es.Event{
-		{Type: "SomethingHappened"},
-		{Type: "SomethingHappened"},
-		{Type: "SomethingElseHappened"},
-		{Type: "SomethingElseHappened"},
+		es.NewEvent("1", &SomethingHappened{}),
+		es.NewEvent("2", &SomethingHappened{}),
+		es.NewEvent("3", &SomethingElseHappened{}),
+		es.NewEvent("4", &SomethingElseHappened{}),
 	})
 	s.NoError(err)
-	s.True(fakeDriver.saveCalled)
 
 	response, err := s.sqsSvc.ReceiveMessage(&sqs.ReceiveMessageInput{
 		QueueUrl:        s.queueURL,
