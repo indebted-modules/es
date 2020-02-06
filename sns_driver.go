@@ -25,10 +25,6 @@ type SNSDriver struct {
 	driver   Driver
 }
 
-type snsMessage struct {
-	Types []string
-}
-
 // Load delegates to internal driver
 func (d *SNSDriver) Load(aggregateID string) ([]*Event, error) {
 	return d.driver.Load(aggregateID)
@@ -45,13 +41,33 @@ func (d *SNSDriver) Save(events []*Event) error {
 		return nil
 	}
 
-	types := d.extractEventTypes(events)
-	err = d.publish(snsMessage{Types: types})
+	types, err := json.Marshal(d.extractEventTypes(events))
+	if err != nil {
+		log.
+			Warn().
+			Err(err).
+			Msg("Failed marshaling the event types")
+
+		return nil
+	}
+
+	_, err = d.client.Publish(&sns.PublishInput{
+		TopicArn: aws.String(d.topicArn),
+		Message:  aws.String("-"),
+		MessageAttributes: map[string]*sns.MessageAttributeValue{
+			"EventTypes": {
+				DataType:    aws.String("String.Array"),
+				StringValue: aws.String(string(types)),
+			},
+		},
+	})
 	if err != nil {
 		log.
 			Warn().
 			Err(err).
 			Msg("Failed publishing to SNS")
+
+		return nil
 	}
 
 	return nil
@@ -67,31 +83,4 @@ func (d *SNSDriver) extractEventTypes(events []*Event) []string {
 		}
 	}
 	return types
-}
-
-func (d *SNSDriver) publish(data interface{}) error {
-	type message struct {
-		Default string `json:"default"`
-	}
-
-	rawData, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	rawMessage, err := json.Marshal(message{Default: string(rawData)})
-	if err != nil {
-		return err
-	}
-
-	_, err = d.client.Publish(&sns.PublishInput{
-		Message:          aws.String(string(rawMessage)),
-		MessageStructure: aws.String("json"),
-		TopicArn:         aws.String(d.topicArn),
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

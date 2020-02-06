@@ -123,8 +123,12 @@ func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicatedEventTypes() {
 	s.NoError(err)
 	s.Equal(1, len(response.Messages))
 
-	body := &struct{ Message string }{}
+	body := &struct {
+		Message           string
+		MessageAttributes map[string]map[string]interface{}
+	}{}
 	err = json.Unmarshal([]byte(*response.Messages[0].Body), body)
 	s.NoError(err)
-	s.Equal(`{"Types":["SomethingHappened","SomethingElseHappened"]}`, body.Message)
+	s.Equal("String.Array", body.MessageAttributes["EventTypes"]["Type"])
+	s.Equal(`["SomethingHappened","SomethingElseHappened"]`, body.MessageAttributes["EventTypes"]["Value"])
 }
