@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -48,9 +49,9 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 	deepCopy(s.stream, newStream)
 
 	for _, event := range events {
-		event.ID = string(newSequence)
-		event.Created = time.Now()
 		newSequence++
+		event.ID = strconv.FormatInt(newSequence, 10)
+		event.Created = time.Now()
 
 		r, err := toRecord(event)
 		if err != nil {
