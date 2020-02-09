@@ -41,23 +41,34 @@ func (d *SNSDriver) Save(events []*Event) error {
 		return nil
 	}
 
-	types, err := json.Marshal(d.extractEventTypes(events))
+	message := d.toSNSMessage(events)
+	eventIDsByType, err := json.Marshal(message.eventIDsByType)
 	if err != nil {
 		log.
 			Warn().
 			Err(err).
-			Msg("Failed marshaling the event types")
+			Msg("Failed marshaling eventIDsByType")
+
+		return nil
+	}
+
+	eventTypes, err := json.Marshal(message.eventTypes)
+	if err != nil {
+		log.
+			Warn().
+			Err(err).
+			Msg("Failed marshaling eventTypes")
 
 		return nil
 	}
 
 	_, err = d.client.Publish(&sns.PublishInput{
 		TopicArn: aws.String(d.topicArn),
-		Message:  aws.String("-"),
+		Message:  aws.String(string(eventIDsByType)),
 		MessageAttributes: map[string]*sns.MessageAttributeValue{
 			"EventTypes": {
 				DataType:    aws.String("String.Array"),
-				StringValue: aws.String(string(types)),
+				StringValue: aws.String(string(eventTypes)),
 			},
 		},
 	})
@@ -73,14 +84,22 @@ func (d *SNSDriver) Save(events []*Event) error {
 	return nil
 }
 
-func (d *SNSDriver) extractEventTypes(events []*Event) []string {
-	set := make(map[string]bool)
-	types := make([]string, 0, len(set))
+type snsMessage struct {
+	eventTypes     []string
+	eventIDsByType map[string][]string
+}
+
+func (d *SNSDriver) toSNSMessage(events []*Event) *snsMessage {
+	types := []string{}
+	idsByType := map[string][]string{}
 	for _, event := range events {
-		if set[event.Type] == false {
-			set[event.Type] = true
+		if _, ok := idsByType[event.Type]; !ok {
 			types = append(types, event.Type)
 		}
+		idsByType[event.Type] = append(idsByType[event.Type], event.ID)
 	}
-	return types
+	return &snsMessage{
+		eventTypes:     types,
+		eventIDsByType: idsByType,
+	}
 }
