@@ -106,13 +106,12 @@ func (s *SNSNotifierSuite) TestSaveDoesNotPublishWhenNoEvents() {
 }
 
 func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicatedEventTypes() {
-	inMemoryDriver := es.NewInMemoryDriver()
-	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, inMemoryDriver)
+	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, es.NewInMemoryDriver())
 	err := driver.Save([]*es.Event{
-		es.NewEvent("1", &SomethingHappened{}),
-		es.NewEvent("2", &SomethingHappened{}),
-		es.NewEvent("3", &SomethingElseHappened{}),
-		es.NewEvent("4", &SomethingElseHappened{}),
+		es.NewEvent("uuid-1", &SomethingHappened{}),
+		es.NewEvent("uuid-2", &SomethingElseHappened{}),
+		es.NewEvent("uuid-3", &SomethingHappened{}),
+		es.NewEvent("uuid-4", &SomethingElseHappened{}),
 	})
 	s.NoError(err)
 
@@ -127,8 +126,13 @@ func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicatedEventTypes() {
 		Message           string
 		MessageAttributes map[string]map[string]interface{}
 	}{}
+
 	err = json.Unmarshal([]byte(*response.Messages[0].Body), body)
 	s.NoError(err)
+	s.JSONEq(`{
+		"SomethingHappened": ["1","3"],
+		"SomethingElseHappened": ["2","4"]
+	}`, body.Message)
 	s.Equal("String.Array", body.MessageAttributes["EventTypes"]["Type"])
 	s.Equal(`["SomethingHappened","SomethingElseHappened"]`, body.MessageAttributes["EventTypes"]["Value"])
 }
