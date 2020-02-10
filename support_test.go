@@ -69,6 +69,10 @@ func (d *BrokenDriver) Save(_ []*es.Event) error {
 	return fmt.Errorf(d.ErrorMessage)
 }
 
+func (d *BrokenDriver) ReadEventsForward(position int64) ([]*es.Event, error) {
+	panic("implement me!")
+}
+
 // SomethingHappened event sample for testing
 type SomethingHappened struct {
 	Data string

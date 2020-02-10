@@ -284,6 +284,124 @@ func (s *PostgresDriverSuite) TestSaveEmptyEvents() {
 	s.NoError(err)
 }
 
+func (s *PostgresDriverSuite) TestReadEventsForward() {
+	stmt, err := s.db.Prepare(`
+   		INSERT INTO events (
+	   		ID,
+	   		Type,
+	   		Created,
+	   		AggregateID,
+	   		AggregateVersion,
+	   		AggregateType,
+	   		Payload
+	   	) VALUES($1, $2, $3, $4, $5, $6, $7)
+   	`)
+	s.NoError(err)
+	defer es.ShouldClose(stmt)
+
+	_, err = stmt.Exec(
+		1,
+		"SomethingHappened",
+		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		phonyUUID(1),
+		0,
+		"AggregateType",
+		`{"Data": "AggregateID#1 - V0"}`,
+	)
+	s.NoError(err)
+
+	_, err = stmt.Exec(
+		2,
+		"SomethingHappened",
+		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		phonyUUID(2),
+		0,
+		"AggregateType",
+		`{"Data": "AggregateID#2 - V0"}`,
+	)
+	s.NoError(err)
+
+	_, err = stmt.Exec(
+		3,
+		"SomethingHappened",
+		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		phonyUUID(1),
+		1,
+		"AggregateType",
+		`{"Data": "AggregateID#1 - V1"}`,
+	)
+	s.NoError(err)
+
+	events, err := s.driver.ReadEventsForward(0)
+	s.NoError(err)
+	s.Equal([]*es.Event{
+		{
+			ID:               "1",
+			Type:             "SomethingHappened",
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+			AggregateID:      phonyUUID(1),
+			AggregateVersion: 0,
+			AggregateType:    "AggregateType",
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V0"},
+		},
+		{
+			ID:               "2",
+			Type:             "SomethingHappened",
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+			AggregateID:      phonyUUID(2),
+			AggregateVersion: 0,
+			AggregateType:    "AggregateType",
+			Payload:          &SomethingHappened{Data: "AggregateID#2 - V0"},
+		},
+		{
+			ID:               "3",
+			Type:             "SomethingHappened",
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+			AggregateID:      phonyUUID(1),
+			AggregateVersion: 1,
+			AggregateType:    "AggregateType",
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
+		},
+	}, events)
+
+	events, err = s.driver.ReadEventsForward(1)
+	s.NoError(err)
+	s.Equal([]*es.Event{
+		{
+			ID:               "2",
+			Type:             "SomethingHappened",
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+			AggregateID:      phonyUUID(2),
+			AggregateVersion: 0,
+			AggregateType:    "AggregateType",
+			Payload:          &SomethingHappened{Data: "AggregateID#2 - V0"},
+		},
+		{
+			ID:               "3",
+			Type:             "SomethingHappened",
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+			AggregateID:      phonyUUID(1),
+			AggregateVersion: 1,
+			AggregateType:    "AggregateType",
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
+		},
+	}, events)
+
+	events, err = s.driver.ReadEventsForward(2)
+	s.NoError(err)
+	s.Equal([]*es.Event{
+		{
+			ID:               "3",
+			Type:             "SomethingHappened",
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+			AggregateID:      phonyUUID(1),
+			AggregateVersion: 1,
+			AggregateType:    "AggregateType",
+			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
+		},
+	}, events)
+}
+
 func readResult(rows *sql.Rows) ([]*Row, error) {
 	defer es.ShouldClose(rows)
 	var result []*Row

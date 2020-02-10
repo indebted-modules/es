@@ -89,6 +89,11 @@ func (d *SNSDriver) Save(events []*Event) error {
 	return nil
 }
 
+// ReadEventsForward .
+func (d *SNSDriver) ReadEventsForward(position int64) ([]*Event, error) {
+	panic("implement me!")
+}
+
 func (d *SNSDriver) toSNSMessage(events []*Event) *snsMessage {
 	types := []string{}
 	idsByType := map[string][]string{}

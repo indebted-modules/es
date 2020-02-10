@@ -160,6 +160,70 @@ func (d *PostgresDriver) Save(events []*Event) error {
 	return nil
 }
 
+// ReadEventsForward .
+func (d *PostgresDriver) ReadEventsForward(position int64) ([]*Event, error) {
+	rows, err := d.DB.Query(`
+   		SELECT
+			ID,
+			Type,
+			Created,
+			AggregateID,
+			AggregateVersion,
+			AggregateType,
+			Payload
+	   	FROM events
+	   	WHERE ID > $1
+	   	ORDER BY AggregateVersion
+   	`, position)
+	if err != nil {
+		return nil, err
+	}
+	defer ShouldClose(rows)
+
+	events, err := d.rowsToEvents(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return events, err
+}
+
+func (d *PostgresDriver) rowsToEvents(rows *sql.Rows) ([]*Event, error) {
+	var events []*Event
+	for rows.Next() {
+		var event Event
+		var rawPayload []byte
+		err := rows.Scan(
+			&event.ID,
+			&event.Type,
+			&event.Created,
+			&event.AggregateID,
+			&event.AggregateVersion,
+			&event.AggregateType,
+			&rawPayload,
+		)
+		if err != nil {
+			return nil, err
+		}
+		typedPayload, err := resolveType(event.Type)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(rawPayload, typedPayload)
+		if err != nil {
+			return nil, err
+		}
+		event.Payload = typedPayload
+		events = append(events, &event)
+	}
+	err := rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
 // MustConnect ensures a healthy connection is established with the
 // given URL. Panics otherwise.
 func MustConnect(url string) *sql.DB {
