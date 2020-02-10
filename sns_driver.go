@@ -91,7 +91,7 @@ func (d *SNSDriver) Save(events []*Event) error {
 
 // ReadEventsOfTypes .
 func (d *SNSDriver) ReadEventsOfTypes(position int64, count uint, types []string) ([]*Event, error) {
-	return d.driver.ReadEventsOfTypes(position, count, []string{})
+	return d.driver.ReadEventsOfTypes(position, count, types)
 }
 
 func (d *SNSDriver) toSNSMessage(events []*Event) *snsMessage {

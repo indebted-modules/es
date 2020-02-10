@@ -41,5 +41,5 @@ func (s *VerboseDriver) Save(events []*Event) error {
 
 // ReadEventsOfTypes .
 func (s *VerboseDriver) ReadEventsOfTypes(position int64, count uint, types []string) ([]*Event, error) {
-	return s.Driver.ReadEventsOfTypes(position, count, []string{})
+	return s.Driver.ReadEventsOfTypes(position, count, types)
 }

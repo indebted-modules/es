@@ -137,14 +137,14 @@ func (s *SNSNotifierSuite) TestPublishesOnceAndDeduplicatedEventTypes() {
 	s.Equal(`["SomethingHappened","SomethingElseHappened"]`, body.MessageAttributes["EventTypes"]["Value"])
 }
 
-func (s *SNSNotifierSuite) TestDelegateReadEventsForwardToInternalDriver() {
+func (s *SNSNotifierSuite) TestDelegateReadEventsOfTypesToInternalDriver() {
 	inMemoryDriver := es.NewInMemoryDriver()
 	err := inMemoryDriver.Save([]*es.Event{es.NewEvent("123", &SomethingHappened{})})
 	s.NoError(err)
 
 	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, inMemoryDriver)
 
-	events, err := driver.ReadEventsOfTypes(0, 1, []string{})
+	events, err := driver.ReadEventsOfTypes(0, 1, []string{"SomethingHappened"})
 	s.NoError(err)
 	s.Equal(&SomethingHappened{}, events[0].Payload)
 }
