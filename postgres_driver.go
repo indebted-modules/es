@@ -145,10 +145,11 @@ func (d *PostgresDriver) ReadEventsForward(position int64, count uint) ([]*Event
 			AggregateVersion,
 			AggregateType,
 			Payload
-	   	FROM events
-	   	WHERE ID > $1
-	   	ORDER BY AggregateVersion
-   	`, position)
+		FROM events
+		WHERE ID > $1
+		ORDER BY ID
+		LIMIT $2
+	`, position, count)
 	if err != nil {
 		return nil, err
 	}
