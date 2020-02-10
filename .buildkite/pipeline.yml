@@ -2,7 +2,6 @@ steps:
   - name: lint && test
     command:
       - mmake lint
-      - mmake dynamo.is-up
       - mmake test
     agents:
       queue: search

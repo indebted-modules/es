@@ -8,15 +8,10 @@ services:
       - ./.tmp/go/cache:/.cache
       - ./.tmp/mmake:/usr/local/include/github.com
     environment:
-      - DYNAMO_URL=http://dynamodb:8000
       - POSTGRES_URL=postgres://user:password@postgres/indebted?sslmode=disable
     depends_on:
-      - dynamodb
       - postgres
       - localstack
-
-  dynamodb:
-    image: amazon/dynamodb-local:1.11.477
 
   postgres:
     image: postgres:9.6-alpine
