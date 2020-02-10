@@ -90,8 +90,8 @@ func (d *SNSDriver) Save(events []*Event) error {
 }
 
 // ReadEventsForward .
-func (d *SNSDriver) ReadEventsForward(position int64) ([]*Event, error) {
-	return d.driver.ReadEventsForward(position)
+func (d *SNSDriver) ReadEventsForward(position int64, count uint) ([]*Event, error) {
+	return d.driver.ReadEventsForward(position, count)
 }
 
 func (d *SNSDriver) toSNSMessage(events []*Event) *snsMessage {
