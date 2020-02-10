@@ -90,8 +90,8 @@ func (d *SNSDriver) Save(events []*Event) error {
 }
 
 // ReadEventsOfTypes .
-func (d *SNSDriver) ReadEventsOfTypes(position int64, count uint) ([]*Event, error) {
-	return d.driver.ReadEventsOfTypes(position, count)
+func (d *SNSDriver) ReadEventsOfTypes(position int64, count uint, types []string) ([]*Event, error) {
+	return d.driver.ReadEventsOfTypes(position, count, []string{})
 }
 
 func (d *SNSDriver) toSNSMessage(events []*Event) *snsMessage {

@@ -25,7 +25,7 @@ func (s *InMemoryDriverSuite) TestReadEventsForward() {
 	})
 	s.NoError(err)
 
-	events, err := driver.ReadEventsOfTypes(0, 1)
+	events, err := driver.ReadEventsOfTypes(0, 1, []string{})
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -39,7 +39,7 @@ func (s *InMemoryDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = driver.ReadEventsOfTypes(1, 1)
+	events, err = driver.ReadEventsOfTypes(1, 1, []string{})
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -53,7 +53,7 @@ func (s *InMemoryDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = driver.ReadEventsOfTypes(2, 1)
+	events, err = driver.ReadEventsOfTypes(2, 1, []string{})
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -67,11 +67,11 @@ func (s *InMemoryDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = driver.ReadEventsOfTypes(3, 1)
+	events, err = driver.ReadEventsOfTypes(3, 1, []string{})
 	s.NoError(err)
 	s.Empty(events)
 
-	events, err = driver.ReadEventsOfTypes(0, 2)
+	events, err = driver.ReadEventsOfTypes(0, 2, []string{})
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -94,7 +94,7 @@ func (s *InMemoryDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = driver.ReadEventsOfTypes(1, 10)
+	events, err = driver.ReadEventsOfTypes(1, 10, []string{})
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{

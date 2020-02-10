@@ -84,7 +84,7 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 }
 
 // ReadEventsOfTypes .
-func (s *InMemoryDriver) ReadEventsOfTypes(position int64, count uint) ([]*Event, error) {
+func (s *InMemoryDriver) ReadEventsOfTypes(position int64, count uint, types []string) ([]*Event, error) {
 	stream := s.Stream()
 	limit := math.Min(float64(len(stream)), float64(position+int64(count)))
 	return stream[position:int64(limit)], nil
