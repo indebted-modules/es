@@ -85,9 +85,20 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 
 // ReadEventsOfTypes .
 func (s *InMemoryDriver) ReadEventsOfTypes(position int64, count uint, types []string) ([]*Event, error) {
-	stream := s.Stream()
-	limit := math.Min(float64(len(stream)), float64(position+int64(count)))
-	return stream[position:int64(limit)], nil
+	typesMap := map[string]bool{}
+	for _, t := range types {
+		typesMap[t] = true
+	}
+
+	filteredStream := []*Event{}
+	for _, event := range s.Stream()[position:] {
+		if typesMap[event.Type] {
+			filteredStream = append(filteredStream, event)
+		}
+	}
+
+	limit := math.Min(float64(len(filteredStream)), float64(count))
+	return filteredStream[:int64(limit)], nil
 }
 
 func deepCopy(source, destination map[string]map[int64]*record) {
