@@ -134,8 +134,8 @@ func (d *PostgresDriver) Save(events []*Event) error {
 	return nil
 }
 
-// ReadEventsForward .
-func (d *PostgresDriver) ReadEventsForward(position int64, count uint) ([]*Event, error) {
+// ReadEventsOfTypes .
+func (d *PostgresDriver) ReadEventsOfTypes(position int64, count uint) ([]*Event, error) {
 	rows, err := d.DB.Query(`
    		SELECT
 			ID,
