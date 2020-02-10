@@ -76,7 +76,7 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 
 // ReadEventsForward .
 func (s *InMemoryDriver) ReadEventsForward(position int64) ([]*Event, error) {
-	panic("implement me!")
+	return s.Stream()[position:], nil
 }
 
 func deepCopy(source, destination map[string]map[int64]*record) {

@@ -41,5 +41,5 @@ func (s *VerboseDriver) Save(events []*Event) error {
 
 // ReadEventsForward .
 func (s *VerboseDriver) ReadEventsForward(position int64) ([]*Event, error) {
-	panic("implement me!")
+	return s.Driver.ReadEventsForward(position)
 }

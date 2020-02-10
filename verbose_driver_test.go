@@ -34,3 +34,14 @@ func (s *VerboseDriverSuite) TestDelegateSaveToInternalDriver() {
 	s.NoError(err)
 	s.Equal(&SomethingHappened{}, driver.Stream()[0].Payload)
 }
+
+func (s *VerboseDriverSuite) TestDelegateReadEventsForwardToInternalDriver() {
+	driver := es.NewInMemoryDriver()
+	err := driver.Save([]*es.Event{es.NewEvent("123", &SomethingHappened{})})
+	s.NoError(err)
+
+	verboseDriver := es.NewVerboseDriver(driver)
+	events, err := verboseDriver.ReadEventsForward(0)
+	s.NoError(err)
+	s.Equal(&SomethingHappened{}, events[0].Payload)
+}
