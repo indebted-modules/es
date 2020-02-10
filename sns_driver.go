@@ -25,6 +25,11 @@ type SNSDriver struct {
 	driver   Driver
 }
 
+type snsMessage struct {
+	eventTypes     []string
+	eventIDsByType map[string][]string
+}
+
 // Load delegates to internal driver
 func (d *SNSDriver) Load(aggregateID string) ([]*Event, error) {
 	return d.driver.Load(aggregateID)
@@ -82,11 +87,6 @@ func (d *SNSDriver) Save(events []*Event) error {
 	}
 
 	return nil
-}
-
-type snsMessage struct {
-	eventTypes     []string
-	eventIDsByType map[string][]string
 }
 
 func (d *SNSDriver) toSNSMessage(events []*Event) *snsMessage {
