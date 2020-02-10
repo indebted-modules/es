@@ -69,8 +69,8 @@ func (d *BrokenDriver) Save(_ []*es.Event) error {
 	return fmt.Errorf(d.ErrorMessage)
 }
 
-func (d *BrokenDriver) ReadEventsForward(position int64) ([]*es.Event, error) {
-	panic("implement me!")
+func (d *BrokenDriver) ReadEventsForward(_ int64) ([]*es.Event, error) {
+	return nil, fmt.Errorf(d.ErrorMessage)
 }
 
 // SomethingHappened event sample for testing
