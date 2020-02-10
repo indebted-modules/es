@@ -39,7 +39,7 @@ func (s *VerboseDriver) Save(events []*Event) error {
 	return nil
 }
 
-// ReadEventsForward .
-func (s *VerboseDriver) ReadEventsForward(position int64, count uint) ([]*Event, error) {
-	return s.Driver.ReadEventsForward(position, count)
+// ReadEventsOfTypes .
+func (s *VerboseDriver) ReadEventsOfTypes(position int64, count uint) ([]*Event, error) {
+	return s.Driver.ReadEventsOfTypes(position, count)
 }

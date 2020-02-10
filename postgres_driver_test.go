@@ -332,7 +332,7 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 	)
 	s.NoError(err)
 
-	events, err := s.driver.ReadEventsForward(0, 1)
+	events, err := s.driver.ReadEventsOfTypes(0, 1)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -346,7 +346,7 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = s.driver.ReadEventsForward(1, 1)
+	events, err = s.driver.ReadEventsOfTypes(1, 1)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -360,7 +360,7 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = s.driver.ReadEventsForward(2, 1)
+	events, err = s.driver.ReadEventsOfTypes(2, 1)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -374,11 +374,11 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = s.driver.ReadEventsForward(3, 1)
+	events, err = s.driver.ReadEventsOfTypes(3, 1)
 	s.NoError(err)
 	s.Empty(events)
 
-	events, err = s.driver.ReadEventsForward(0, 2)
+	events, err = s.driver.ReadEventsOfTypes(0, 2)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
@@ -401,7 +401,7 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 		},
 	}, events)
 
-	events, err = s.driver.ReadEventsForward(1, 10)
+	events, err = s.driver.ReadEventsOfTypes(1, 10)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
