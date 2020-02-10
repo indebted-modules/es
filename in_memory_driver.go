@@ -83,7 +83,7 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 }
 
 // ReadEventsForward .
-func (s *InMemoryDriver) ReadEventsForward(position int64) ([]*Event, error) {
+func (s *InMemoryDriver) ReadEventsForward(position int64, count uint) ([]*Event, error) {
 	return s.Stream()[position:], nil
 }
 

@@ -26,7 +26,7 @@ func (s *InMemoryDriverSuite) TestReadEventsForward() {
 	})
 	s.NoError(err)
 
-	events, err := driver.ReadEventsForward(0)
+	events, err := driver.ReadEventsForward(0, 0)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{

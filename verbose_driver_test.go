@@ -41,7 +41,7 @@ func (s *VerboseDriverSuite) TestDelegateReadEventsForwardToInternalDriver() {
 	s.NoError(err)
 
 	verboseDriver := es.NewVerboseDriver(driver)
-	events, err := verboseDriver.ReadEventsForward(0)
+	events, err := verboseDriver.ReadEventsForward(0, 0)
 	s.NoError(err)
 	s.Equal(&SomethingHappened{}, events[0].Payload)
 }
