@@ -3,6 +3,7 @@ package es
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"time"
@@ -84,7 +85,9 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 
 // ReadEventsForward .
 func (s *InMemoryDriver) ReadEventsForward(position int64, count uint) ([]*Event, error) {
-	return s.Stream()[position:], nil
+	stream := s.Stream()
+	limit := math.Min(float64(len(stream)), float64(position+int64(count)))
+	return stream[position:int64(limit)], nil
 }
 
 func deepCopy(source, destination map[string]map[int64]*record) {
