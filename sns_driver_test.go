@@ -144,7 +144,7 @@ func (s *SNSNotifierSuite) TestDelegateReadEventsForwardToInternalDriver() {
 
 	driver := es.NewSNSDriver(s.snsSvc, *s.topicArn, inMemoryDriver)
 
-	events, err := driver.ReadEventsOfTypes(0, 1)
+	events, err := driver.ReadEventsOfTypes(0, 1, []string{})
 	s.NoError(err)
 	s.Equal(&SomethingHappened{}, events[0].Payload)
 }
