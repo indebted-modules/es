@@ -6,8 +6,7 @@ import (
 	"io"
 	"time"
 
-	// Postgres driver
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -146,10 +145,12 @@ func (d *PostgresDriver) ReadEventsOfTypes(position int64, count uint, types []s
 			AggregateType,
 			Payload
 		FROM events
-		WHERE ID > $1
+		WHERE ID > $1 AND
+		Type = ANY($3) -- TODO: Replace with IN
 		ORDER BY ID
 		LIMIT $2
-	`, position, count)
+	`, position, count, pq.Array(types))
+
 	if err != nil {
 		return nil, err
 	}
