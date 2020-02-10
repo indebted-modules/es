@@ -12,13 +12,18 @@ import (
 
 // NewInMemoryDriver creates a new InMemoryDriver
 func NewInMemoryDriver() *InMemoryDriver {
-	return &InMemoryDriver{sequence: 0, stream: map[string]map[int64]*record{}}
+	return &InMemoryDriver{
+		sequence: 0,
+		stream:   map[string]map[int64]*record{},
+		clock:    time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
+	}
 }
 
 // InMemoryDriver implementation for unit testing
 type InMemoryDriver struct {
 	sequence int64
 	stream   map[string]map[int64]*record
+	clock    time.Time
 }
 
 // Load all events by aggregate ID
@@ -46,12 +51,14 @@ func (s *InMemoryDriver) Load(aggregateID string) ([]*Event, error) {
 func (s *InMemoryDriver) Save(events []*Event) error {
 	newStream := map[string]map[int64]*record{}
 	newSequence := s.sequence
+	newClock := s.clock
 	deepCopy(s.stream, newStream)
 
 	for _, event := range events {
 		newSequence++
 		event.ID = strconv.FormatInt(newSequence, 10)
-		event.Created = time.Now()
+		event.Created = newClock
+		newClock = newClock.Add(1 * time.Second)
 
 		r, err := toRecord(event)
 		if err != nil {
@@ -71,6 +78,7 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 
 	deepCopy(newStream, s.stream)
 	s.sequence = newSequence
+	s.clock = newClock
 	return nil
 }
 
