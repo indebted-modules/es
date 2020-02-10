@@ -74,6 +74,11 @@ func (s *InMemoryDriver) Save(events []*Event) error {
 	return nil
 }
 
+// ReadEventsForward .
+func (s *InMemoryDriver) ReadEventsForward(position int64) ([]*Event, error) {
+	panic("implement me!")
+}
+
 func deepCopy(source, destination map[string]map[int64]*record) {
 	for aggregateID, records := range source {
 		for version, r := range records {

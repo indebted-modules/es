@@ -38,3 +38,8 @@ func (s *VerboseDriver) Save(events []*Event) error {
 
 	return nil
 }
+
+// ReadEventsForward .
+func (s *VerboseDriver) ReadEventsForward(position int64) ([]*Event, error) {
+	panic("implement me!")
+}
