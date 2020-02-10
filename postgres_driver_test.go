@@ -305,8 +305,8 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(1),
 		0,
-		"AggregateType",
-		`{"Data": "AggregateID#1 - V0"}`,
+		"SampleAggregate",
+		`{"Data": "1"}`,
 	)
 	s.NoError(err)
 
@@ -316,88 +316,111 @@ func (s *PostgresDriverSuite) TestReadEventsForward() {
 		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		phonyUUID(2),
 		0,
-		"AggregateType",
-		`{"Data": "AggregateID#2 - V0"}`,
+		"SampleAggregate",
+		`{"Data": "2"}`,
 	)
 	s.NoError(err)
 
 	_, err = stmt.Exec(
 		3,
-		"SomethingHappened",
+		"SomethingElseHappened",
 		time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
-		phonyUUID(1),
-		1,
-		"AggregateType",
-		`{"Data": "AggregateID#1 - V1"}`,
+		phonyUUID(3),
+		0,
+		"AnotherSampleAggregate",
+		`{"Data": "3"}`,
 	)
 	s.NoError(err)
 
-	events, err := s.driver.ReadEventsForward(0, 0)
+	events, err := s.driver.ReadEventsForward(0, 1)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
 			ID:               "1",
 			Type:             "SomethingHappened",
-			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(1),
+			AggregateType:    "SampleAggregate",
 			AggregateVersion: 0,
-			AggregateType:    "AggregateType",
-			Payload:          &SomethingHappened{Data: "AggregateID#1 - V0"},
-		},
-		{
-			ID:               "2",
-			Type:             "SomethingHappened",
+			Payload:          &SomethingHappened{Data: "1"},
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
-			AggregateID:      phonyUUID(2),
-			AggregateVersion: 0,
-			AggregateType:    "AggregateType",
-			Payload:          &SomethingHappened{Data: "AggregateID#2 - V0"},
-		},
-		{
-			ID:               "3",
-			Type:             "SomethingHappened",
-			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
-			AggregateID:      phonyUUID(1),
-			AggregateVersion: 1,
-			AggregateType:    "AggregateType",
-			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
 		},
 	}, events)
 
-	events, err = s.driver.ReadEventsForward(1, 0)
+	events, err = s.driver.ReadEventsForward(1, 1)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
 			ID:               "2",
 			Type:             "SomethingHappened",
-			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 			AggregateID:      phonyUUID(2),
+			AggregateType:    "SampleAggregate",
 			AggregateVersion: 0,
-			AggregateType:    "AggregateType",
-			Payload:          &SomethingHappened{Data: "AggregateID#2 - V0"},
-		},
-		{
-			ID:               "3",
-			Type:             "SomethingHappened",
+			Payload:          &SomethingHappened{Data: "2"},
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
-			AggregateID:      phonyUUID(1),
-			AggregateVersion: 1,
-			AggregateType:    "AggregateType",
-			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
 		},
 	}, events)
 
-	events, err = s.driver.ReadEventsForward(2, 0)
+	events, err = s.driver.ReadEventsForward(2, 1)
 	s.NoError(err)
 	s.Equal([]*es.Event{
 		{
 			ID:               "3",
-			Type:             "SomethingHappened",
+			Type:             "SomethingElseHappened",
+			AggregateID:      phonyUUID(3),
+			AggregateType:    "AnotherSampleAggregate",
+			AggregateVersion: 0,
+			Payload:          &SomethingElseHappened{Data: "3"},
 			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		},
+	}, events)
+
+	events, err = s.driver.ReadEventsForward(3, 1)
+	s.NoError(err)
+	s.Empty(events)
+
+	events, err = s.driver.ReadEventsForward(0, 2)
+	s.NoError(err)
+	s.Equal([]*es.Event{
+		{
+			ID:               "1",
+			Type:             "SomethingHappened",
 			AggregateID:      phonyUUID(1),
-			AggregateVersion: 1,
-			AggregateType:    "AggregateType",
-			Payload:          &SomethingHappened{Data: "AggregateID#1 - V1"},
+			AggregateType:    "SampleAggregate",
+			AggregateVersion: 0,
+			Payload:          &SomethingHappened{Data: "1"},
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		},
+		{
+			ID:               "2",
+			Type:             "SomethingHappened",
+			AggregateID:      phonyUUID(2),
+			AggregateType:    "SampleAggregate",
+			AggregateVersion: 0,
+			Payload:          &SomethingHappened{Data: "2"},
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		},
+	}, events)
+
+	events, err = s.driver.ReadEventsForward(1, 10)
+	s.NoError(err)
+	s.Equal([]*es.Event{
+		{
+			ID:               "2",
+			Type:             "SomethingHappened",
+			AggregateID:      phonyUUID(2),
+			AggregateType:    "SampleAggregate",
+			AggregateVersion: 0,
+			Payload:          &SomethingHappened{Data: "2"},
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
+		},
+		{
+			ID:               "3",
+			Type:             "SomethingElseHappened",
+			AggregateID:      phonyUUID(3),
+			AggregateType:    "AnotherSampleAggregate",
+			AggregateVersion: 0,
+			Payload:          &SomethingElseHappened{Data: "3"},
+			Created:          time.Date(1985, time.October, 26, 1, 22, 0, 0, time.UTC),
 		},
 	}, events)
 }
